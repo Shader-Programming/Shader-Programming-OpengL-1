@@ -83,7 +83,7 @@ int main()
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
 
 	
-
+	glEnable(GL_DEPTH_TEST);
 
 
 	

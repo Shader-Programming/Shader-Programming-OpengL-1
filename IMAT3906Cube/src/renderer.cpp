@@ -40,13 +40,14 @@ void Renderer::RenderCube(Shader& shader)
 	shader.setVec3("objectCol", cubeColor);
 	
 	glBindVertexArray(cubeVAO);  // bind and draw cube
-	glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0, 0.0, 5.0));
 	model = glm::rotate(model, (float)(glfwGetTime() * 0.5), glm::vec3(2.0, 2.0, 2.0));
+	//model = glm::rotate(model,glfw)
 	shader.setMat4("model", model);
-	glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
 void Renderer::RenderPlane(Shader& shader)
@@ -108,6 +109,9 @@ void Renderer::CreateCube()
 
 		15,12,13,
 		15,13,14,
+
+		19,18,17,
+		19,17,16,
 
 		23,22,21,
 		23,21,20
