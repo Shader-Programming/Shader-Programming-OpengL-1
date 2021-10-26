@@ -21,6 +21,30 @@ void Renderer::RenderScene(Shader& shader, Camera camera)
 	shader.setVec3("lightCol", lightColor);
 	shader.setVec3("lightDir", lightDirection);
 
+
+
+	glm::vec3 pointLightPos = glm::vec3(0, 0, 0);
+	glm::vec3 pointLightColor = glm::vec3(2, 0, 2);
+
+	shader.setVec3("pLight.position",pointLightPos);
+	shader.setVec3("pLight.color", pointLightColor);
+	shader.setFloat("pLight.Kc", 1);
+	shader.setFloat("pLight.Kl", 0.35f);
+	shader.setFloat("pLight.Ke", 0.044f);
+
+
+	glm::vec3 spotLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	shader.setVec3("sLight.position", camera.Position);
+	shader.setVec3("sLight.direction", camera.Front);
+	shader.setVec3("sLight.color", spotLightColor);
+	shader.setFloat("sLight.Kc", 1);
+	shader.setFloat("sLight.Kl;", 0.027f);
+	shader.setFloat("sLight.Ke", 0.0028f);
+	shader.setFloat("sLight.innerRad", glm::cos(glm::radians(12.5f)));
+	shader.setFloat("sLight.outerRad", glm::cos(glm::radians(17.5f)));
+
+
 	// MVP 
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
 	glm::mat4 view = camera.GetViewMatrix();
