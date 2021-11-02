@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <stb_image.h>
 
 #include "Shader.h"
 #include "Camera.h"
@@ -18,6 +19,8 @@ public:
 	void RenderScene(Shader& shader, Camera camera);
 
 private:
+
+	unsigned int loadTexture(char const* path);
 	void RenderCube(Shader& shader);
 	void RenderPlane(Shader& shader);
 

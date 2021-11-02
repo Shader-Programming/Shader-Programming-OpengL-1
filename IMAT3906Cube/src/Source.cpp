@@ -7,7 +7,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-
 #include "Shader.h"
 #include "Camera.h"
 #include "renderer.h"
@@ -27,6 +26,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+unsigned int loadTexture(char const* path);
+
 
 
 // camera
@@ -78,6 +79,7 @@ int main()
 	// simple vertex and fragment shader 
 	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	shader.use();  // do we need this command each frame? - Probably not if we only have one shader
+
 
 	//Renderer
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
@@ -160,7 +162,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
 }
-
 
 
 
