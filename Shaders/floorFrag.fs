@@ -5,7 +5,6 @@ out vec4 FragColor;
 in vec3 normal;
 in vec3 posWS;
 in vec2 uv;
-in mat3 TBN;
 
 struct pointLight
 {
@@ -36,10 +35,6 @@ uniform vec3 viewPos;
 uniform pointLight pLight;
 uniform spotLight sLight;
 uniform sampler2D diffuseTexture;
-uniform sampler2D specularTexture;
-uniform sampler2D normalMap;
-
-uniform bool toggleNormalMap;
 
 float ambientFactor = 0.5;
 float shine = 64;
@@ -149,23 +144,10 @@ return color;
 
 void main()
 {    	
-    
-    vec3 norm;
-    if(toggleNormalMap)
-    {
-    norm = texture(normalMap,uv).xyz;
-    norm = norm*2.0-1.0;
-    norm = normalize(norm * TBN);
-    }
-    else
-    {
-    norm = normalize(normal);
-    }
-    
+    vec3 norm = normalize(normal);
     vec3 viewDir = normalize(viewPos - posWS);
 
-    //vec3 result =  SpotLight(norm,viewDir) + PointLight(norm,viewDir) ;
-    vec3 result =  DirectionalLight(norm,viewDir) ;
+    vec3 result =  SpotLight(norm,viewDir) + PointLight(norm,viewDir) ;
 
     FragColor = vec4(result, 1.0f);
 }

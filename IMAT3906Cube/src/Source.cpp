@@ -38,14 +38,13 @@ bool firstMouse = true;
 
 
 
-//arrays
-unsigned int floorVBO, cubeVBO, floorEBO, cubeEBO, cubeVAO, floorVAO;
+
 
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-
+bool useNormalMap = 0;
 
 
 
@@ -82,7 +81,7 @@ int main()
 
 
 	//Renderer
-	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+	Renderer renderer(SCR_WIDTH, SCR_HEIGHT,shader);
 
 	
 	glEnable(GL_DEPTH_TEST);
@@ -100,7 +99,7 @@ int main()
 
 		
 		renderer.RenderScene(shader,camera);
-
+		shader.setBool("toggleNormalMap", useNormalMap);
 	
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -126,6 +125,12 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		if (useNormalMap == 1) useNormalMap = 0;
+		else useNormalMap = 1;
+
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

@@ -4,21 +4,41 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 {
 	screenHeight = sHeight;
 	screenWidth = sWidth;
+}
 
-	CreateCube();
+Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight, Shader& shader)
+{
+	screenHeight = sHeight;
+	screenWidth = sWidth;
 	CreateFloor();
 
-	unsigned int diffTexture = loadTexture("..\\resources\\metalPlate\\diffuse.jpg");
+	unsigned int cubeDiffTexture = loadTexture("..\\resources\\metalPlate\\diffuse.jpg");
+	unsigned int planeDiffTexture = loadTexture("..\\resources\\metalRust\\diffuse.jpg");
+	unsigned int cubeNormalM = loadTexture("..\\resources\\metalPlate\\normal.jpg");
 
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, diffTexture);
+	glBindTexture(GL_TEXTURE_2D, cubeDiffTexture);
 
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, planeDiffTexture);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, cubeNormalM);
+
+
+
+	plane1 = Plane(shader);
+	plane1.assignTexture(1);
+
+	cube1 = Cube(shader);
+	cube1.assignTexture(0);
+	cube1.assignNormalMap(2);
 }
 
 void Renderer::RenderScene(Shader& shader, Camera camera)
 {
-	shader.setInt("diffuseTexture", 0);
+	
 	glm::vec3 lightDirection = glm::vec3(0, -1, 0);
 	glm::vec3 lightColor = glm::vec3(1.0, 1.0, 1.0);
 
@@ -61,163 +81,25 @@ void Renderer::RenderScene(Shader& shader, Camera camera)
 	model = glm::mat4(1.0f);
 	shader.setMat4("model", model);
 	RenderPlane(shader);
-	RenderCube(shader);
+	cube1.Render();
+	plane1.Render();
 }
 
 void Renderer::RenderCube(Shader& shader)
 {
-	glm::mat4 model = glm::mat4(1.0f);
-	shader.setVec3("objectCol", cubeColor);
 	
-	glBindVertexArray(cubeVAO);  // bind and draw cube
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0, 0.0, 5.0));
-	model = glm::rotate(model, (float)(glfwGetTime() * 0.5), glm::vec3(2.0, 2.0, 2.0));
-	//model = glm::rotate(model,glfw)
-	shader.setMat4("model", model);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
 void Renderer::RenderPlane(Shader& shader)
 {
-	glm::mat4 model = glm::mat4(1.0f);
-	shader.setMat4("model", model);
-	shader.setVec3("objectCol", floorColor);
-	glBindVertexArray(planeVAO);  // bind and draw floor
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void Renderer::CreateCube()
 {
-	// cube data
-	float cubeVertices[] = {
-		//back
-			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,   0.0f, 0.0f,// 0 
-			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f, //1
-			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-
-			//front
-			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,//4
-			 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-			-0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
-
-			//left
-			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,//8
-			-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-
-			//right
-		   0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,   1.0f, 0.0f,//12
-		   0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-		   0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-		   0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-
-		   //bottom
-			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,//16
-			 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
-
-			//top	
-			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, //20
-			 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
-
-	};
-
-	unsigned int cubeIndices[] = {
-		1,2,3,
-		1,3,0,
-
-		5,6,7,
-		5,7,4,
-
-		11,8,9,
-		11,9,10,
-
-		15,12,13,
-		15,13,14,
-
-		19,18,17,
-		19,17,16,
-
-		23,22,21,
-		23,21,20
-
-	};
-
-
-
-	// Cube
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glGenBuffers(1, &cubeEBO);
-
-	glBindVertexArray(cubeVAO);
-	// fill VBO with vertex data
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	// fill EBO with index data
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8* sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// UV attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 }
 
 void Renderer::CreateFloor()
 {
-	float floorSize = 5.0f;
-	float floorLevel = -2.0f;
-
-	float floorVertices[] = {
-		 -floorSize, floorLevel,  -floorSize, 0.0, 1.0, 0.0,   0.0f, 0.0f,
-		 floorSize, floorLevel,   -floorSize, 0.0, 1.0, 0.0, 1.0f, 0.0f,
-		 floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 1.0f,1.0f,
-		-floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 0.0f,1.0f
-	};
-
-	unsigned int floorIndices[] = {
-		3,2,1,
-		3,1,0
-	};
-
-	//Floor
-	glGenVertexArrays(1, &planeVAO);
-	glGenBuffers(1, &planeVBO);
-	glGenBuffers(1, &planeEBO);
-
-	glBindVertexArray(planeVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// normal attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
 }
 
 unsigned int Renderer::loadTexture(char const* path)

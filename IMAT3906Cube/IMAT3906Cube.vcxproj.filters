@@ -27,6 +27,15 @@
     <ClInclude Include="include\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp">
@@ -45,6 +54,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\stdb_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\plane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

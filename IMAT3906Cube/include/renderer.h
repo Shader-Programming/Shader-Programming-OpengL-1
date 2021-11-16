@@ -12,10 +12,14 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "cube.h"
+#include "plane.h"
+
 
 class Renderer {
 public:
 	Renderer(const unsigned int sWidth, const unsigned int sHeight);
+	Renderer(const unsigned int sWidth, const unsigned int sHeight, Shader& shader);
 	void RenderScene(Shader& shader, Camera camera);
 
 private:
@@ -27,8 +31,10 @@ private:
 	void CreateCube();
 	void CreateFloor();
 
-	unsigned int cubeVAO, cubeVBO, cubeEBO, planeVAO, planeVBO, planeEBO;
+	unsigned int  planeVAO, planeVBO, planeEBO;
 
+	Cube cube1;
+	Plane plane1;
 
 	glm::vec3 cubeColor = glm::vec3(1.0, 0.4, 0.4);
 	glm::vec3 floorColor = glm::vec3(0.1, 0.3, 0.3);
