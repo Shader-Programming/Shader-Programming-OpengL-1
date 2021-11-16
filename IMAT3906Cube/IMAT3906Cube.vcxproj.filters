@@ -62,9 +62,6 @@
     <ClCompile Include="src\cube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="include\plane.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\plane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

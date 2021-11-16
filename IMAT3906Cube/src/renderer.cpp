@@ -1,18 +1,13 @@
 #include "..\include\renderer.h"
 
+
 Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 {
 	screenHeight = sHeight;
 	screenWidth = sWidth;
-}
-
-Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight, Shader& shader)
-{
-	screenHeight = sHeight;
-	screenWidth = sWidth;
-	CreateFloor();
 
 	unsigned int cubeDiffTexture = loadTexture("..\\resources\\metalPlate\\diffuse.jpg");
+	unsigned int cubeSpecular = loadTexture("..\\resources\\metalPlate\\specular.jpg");
 	unsigned int planeDiffTexture = loadTexture("..\\resources\\metalRust\\diffuse.jpg");
 	unsigned int cubeNormalM = loadTexture("..\\resources\\metalPlate\\normal.jpg");
 
@@ -26,63 +21,65 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight, Shader
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, cubeNormalM);
 
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, cubeSpecular);
 
 
-	plane1 = Plane(shader);
+	// simple vertex and fragment shader 
+	Shader cubeShader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
+	Shader floorShader("..\\shaders\\plainVert.vs", "..\\shaders\\floorFrag.fs");
+
+	shaders.push_back(cubeShader);
+	shaders.push_back(floorShader);
+
+	shaders[0].use();
+
+
+	shaders[1].use();
+
+
+
+	plane1 = Plane(floorShader);
 	plane1.assignTexture(1);
 
-	cube1 = Cube(shader);
+	cube1 = Cube(cubeShader);
 	cube1.assignTexture(0);
 	cube1.assignNormalMap(2);
+	cube1.assignSpecularMap(3);
 }
 
-void Renderer::RenderScene(Shader& shader, Camera camera)
+void Renderer::RenderScene( Camera camera)
 {
-	
-	glm::vec3 lightDirection = glm::vec3(0, -1, 0);
-	glm::vec3 lightColor = glm::vec3(1.0, 1.0, 1.0);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
-
-	shader.setVec3("lightCol", lightColor);
-	shader.setVec3("lightDir", lightDirection);
-
-
-
-	glm::vec3 pointLightPos = glm::vec3(0, 0, 0);
-	glm::vec3 pointLightColor = glm::vec3(2, 0, 2);
-
-	shader.setVec3("pLight.position",pointLightPos);
-	shader.setVec3("pLight.color", pointLightColor);
-	shader.setFloat("pLight.Kc", 1);
-	shader.setFloat("pLight.Kl", 0.35f);
-	shader.setFloat("pLight.Ke", 0.044f);
-
-
-	glm::vec3 spotLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
-	shader.setVec3("sLight.position", camera.Position);
-	shader.setVec3("sLight.direction", camera.Front);
-	shader.setVec3("sLight.color", spotLightColor);
-	shader.setFloat("sLight.Kc", 1);
-	shader.setFloat("sLight.Kl;", 0.027f);
-	shader.setFloat("sLight.Ke", 0.0028f);
-	shader.setFloat("sLight.innerRad", glm::cos(glm::radians(12.5f)));
-	shader.setFloat("sLight.outerRad", glm::cos(glm::radians(17.5f)));
-
 
 	// MVP 
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
 	glm::mat4 view = camera.GetViewMatrix();
-	shader.setMat4("projection", projection);
-	shader.setMat4("view", view);
-	shader.setVec3("viewPos", camera.Position);
+
+	shaders[0].setMat4("projection", projection);
+	shaders[0].setMat4("view", view);
+	shaders[0].setVec3("viewPos", camera.Position);
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::mat4(1.0f);
-	shader.setMat4("model", model);
-	RenderPlane(shader);
+	shaders[0].setMat4("model", model);
+
+
+	shaders[1].setMat4("projection", projection);
+	shaders[1].setMat4("view", view);
+	shaders[1].setVec3("viewPos", camera.Position);
+	shaders[1].setMat4("model", model);
+
+	cube1.assignShader(shaders[0]);
+	plane1.assignShader(shaders[1]);
+
 	cube1.Render();
 	plane1.Render();
+}
+
+void Renderer::assignCamera(Camera& cam)
+{
+	camera = &cam;
+	setUniforms(shaders[1], *camera);
+	setUniforms(shaders[0], *camera);
 }
 
 void Renderer::RenderCube(Shader& shader)
@@ -100,6 +97,41 @@ void Renderer::CreateCube()
 
 void Renderer::CreateFloor()
 {
+}
+
+void Renderer::setUniforms(Shader& shader, Camera camera)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
+
+	glm::vec3 lightDirection = glm::vec3(0, -1, 0);
+	glm::vec3 lightColor = glm::vec3(1.0, 1.0, 1.0);
+
+
+	shader.setVec3("lightCol", lightColor);
+	shader.setVec3("lightDir", lightDirection);
+
+
+
+	glm::vec3 pointLightPos = glm::vec3(0, 0, 0);
+	glm::vec3 pointLightColor = glm::vec3(2, 0, 2);
+
+	shader.setVec3("pLight.position", pointLightPos);
+	shader.setVec3("pLight.color", pointLightColor);
+	shader.setFloat("pLight.Kc", 1);
+	shader.setFloat("pLight.Kl", 0.35f);
+	shader.setFloat("pLight.Ke", 0.044f);
+
+
+	glm::vec3 spotLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	shader.setVec3("sLight.position", camera.Position);
+	shader.setVec3("sLight.direction", camera.Front);
+	shader.setVec3("sLight.color", spotLightColor);
+	shader.setFloat("sLight.Kc", 1);
+	shader.setFloat("sLight.Kl;", 0.027f);
+	shader.setFloat("sLight.Ke", 0.0028f);
+	shader.setFloat("sLight.innerRad", glm::cos(glm::radians(12.5f)));
+	shader.setFloat("sLight.outerRad", glm::cos(glm::radians(17.5f)));
 }
 
 unsigned int Renderer::loadTexture(char const* path)

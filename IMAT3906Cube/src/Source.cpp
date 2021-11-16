@@ -75,19 +75,16 @@ int main()
 		return -1;
 	}
 
-	// simple vertex and fragment shader 
-	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
-	shader.use();  // do we need this command each frame? - Probably not if we only have one shader
 
 
 	//Renderer
-	Renderer renderer(SCR_WIDTH, SCR_HEIGHT,shader);
+	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
 
 	
 	glEnable(GL_DEPTH_TEST);
 
 
-	
+	renderer.assignCamera(camera);
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -98,8 +95,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 		
-		renderer.RenderScene(shader,camera);
-		shader.setBool("toggleNormalMap", useNormalMap);
+		renderer.RenderScene(camera);
+		renderer.shaders[0].setBool("toggleNormalMap", useNormalMap);
 	
 		glfwSwapBuffers(window);
 		glfwPollEvents();

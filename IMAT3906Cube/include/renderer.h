@@ -19,10 +19,11 @@
 class Renderer {
 public:
 	Renderer(const unsigned int sWidth, const unsigned int sHeight);
-	Renderer(const unsigned int sWidth, const unsigned int sHeight, Shader& shader);
-	void RenderScene(Shader& shader, Camera camera);
-
+	void RenderScene( Camera camera);
+	std::vector<Shader> shaders;
+	void assignCamera(Camera& cam);
 private:
+	void setUniforms(Shader& shader, Camera camera);
 
 	unsigned int loadTexture(char const* path);
 	void RenderCube(Shader& shader);
@@ -35,7 +36,7 @@ private:
 
 	Cube cube1;
 	Plane plane1;
-
+	Camera* camera;
 	glm::vec3 cubeColor = glm::vec3(1.0, 0.4, 0.4);
 	glm::vec3 floorColor = glm::vec3(0.1, 0.3, 0.3);
 

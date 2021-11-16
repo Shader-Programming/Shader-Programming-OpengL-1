@@ -125,11 +125,11 @@ diffuseFactor = max(diffuseFactor, 0.0);
 vec3 diffuseColor = lightCol*diffMapColor*diffuseFactor;
 
 //specular
-vec3 reflectDir = -lightDir;
+vec3 reflectDir = reflect(lightDir,norm);
 float specularFactor = dot(viewDir, reflectDir);
 specularFactor = max(specularFactor, 0.0);
 specularFactor = pow(specularFactor, shine);
-vec3 specluarColor = lightCol * specularFactor * specularStrength;
+vec3 specluarColor = lightCol * specularFactor * specularStrength *texture(specularTexture,uv).x;
 
 vec3 result = ambientColor + diffuseColor + specluarColor;
 return result;
@@ -155,7 +155,7 @@ void main()
     {
     norm = texture(normalMap,uv).xyz;
     norm = norm*2.0-1.0;
-    norm = normalize(norm * TBN);
+    norm = normalize(TBN * norm);
     }
     else
     {

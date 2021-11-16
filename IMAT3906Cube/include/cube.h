@@ -16,6 +16,7 @@ public:
 	void Render();
 	void assignTexture(unsigned int id);
 	void assignNormalMap(unsigned int id);
+	void assignSpecularMap(unsigned int id);
 	void assignShader(Shader& shader);
 	static unsigned int cubeIndices[36];
 	static float cubeVertices[192];
@@ -24,4 +25,5 @@ private:
 	glm::vec3 m_color;
 	unsigned int m_textureId;
 	unsigned int m_normalMapId;
+	unsigned int m_specularMapId;
 };

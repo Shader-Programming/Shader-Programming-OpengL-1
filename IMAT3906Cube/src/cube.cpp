@@ -130,9 +130,11 @@ Cube::Cube(Shader& cubeshader)
 
 void Cube::Render()
 {
-
+	m_shader->use();
 	m_shader->setInt("diffuseTexture", m_textureId);
 	m_shader->setInt("normalMap", m_normalMapId);
+	m_shader->setInt("specularTexture", m_specularMapId);
+
 	glm::mat4 model = glm::mat4(1.0f);
 	m_shader->setVec3("objectCol", m_color);
 
@@ -155,6 +157,11 @@ void Cube::assignTexture(unsigned int id)
 void Cube::assignNormalMap(unsigned int id)
 {
 	m_normalMapId = id;
+}
+
+void Cube::assignSpecularMap(unsigned int id)
+{
+	m_specularMapId = id;
 }
 
 void Cube::assignShader(Shader& shader)

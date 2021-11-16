@@ -19,11 +19,13 @@ void main()
 {  
     gl_Position = projection * view * model*vec4(aPos,1.0);
     posWS = (model * vec4(aPos,1.0)).xyz;
-    normal = aNormals ;
-    normal = (model * vec4(aNormals,0.0)).xyz;
+    //normal = aNormals ;
+    normal = normalize((model * vec4(aNormals,0.0)).xyz);
+    
 
-    vec3 T = (model * vec4(aTan,0.0)).xyz;
-    vec3 B = (model * vec4(aBiTan,0.0)).xyz;
+    vec3 T = normalize((model * vec4(aTan,0.0)).xyz);
+    vec3 B = normalize((model * vec4(aBiTan,0.0)).xyz);
+
     TBN = mat3(T,B,normal);
     uv = aUV;
 }

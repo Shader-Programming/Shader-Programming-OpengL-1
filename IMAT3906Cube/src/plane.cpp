@@ -84,6 +84,7 @@ Plane::Plane(Shader& planeShader)
 }
 void Plane::Render()
 {
+	m_shader->use();
 	m_shader->setInt("diffuseTexture", m_textureId);
 	glm::mat4 model = glm::mat4(1.0f);
 	m_shader->setMat4("model", model);

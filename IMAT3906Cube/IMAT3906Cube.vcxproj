@@ -151,7 +151,6 @@
     <ClInclude Include="include\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\plane.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\cube.cpp" />
     <ClCompile Include="src\entity.cpp" />
