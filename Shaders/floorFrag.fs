@@ -36,10 +36,9 @@ uniform vec3 viewPos;
 uniform pointLight pLight;
 uniform spotLight sLight;
 uniform sampler2D diffuseTexture;
-uniform sampler2D specularTexture;
 uniform sampler2D normalMap;
 uniform sampler2D dispMap;
-
+uniform sampler2D specularTexture;
 uniform bool toggleNormalMap;
 uniform bool toggleDispMap;
 
@@ -122,7 +121,7 @@ vec3 DirectionalLight(vec3 norm, vec3 viewDir,vec2 texCoords)
 vec3 ambientColor = lightCol * diffMapColor * ambientFactor;
 
 //diffuse
-float diffuseFactor = dot(norm, lightDir);
+float diffuseFactor = dot(norm, -lightDir);
 diffuseFactor = max(diffuseFactor, 0.0);
 vec3 diffuseColor = lightCol*diffMapColor*diffuseFactor;
 
@@ -154,6 +153,26 @@ float height = texture(dispMap,texCoords).r;
 return texCoords - (viewDir.xy) * (height * 0.0175);
 }
 
+//vec2 SteepParallaxMapping(vec2 texCoords,vec3 viewDir)
+//{
+//float numLayers = 10;
+//float layerDepth = 1.0/numLayers;
+//float currentLayerDepth = 0.0;
+//vec2 P = viewDir.xy * 0.0175;
+//vec2 deltaTexCoords = Printf/numLayers;
+//vec2 currentTexCoords = P/ numLayers;
+//float currentDepthMapValue = texture(dispMap,currentTexCoords).r;
+
+//while(currentLayerDepth < currentDepthMapValue)
+//{
+//    currentTexCoords -= deltaTexCoords;
+//    currentDepthMapValue = texture(
+//}
+
+//float height = texture(dispMap,texCoords).r;
+//return texCoords - (viewDir.xy) * (height * 0.0175);
+//}
+
 
 void main()
 {    	
@@ -169,16 +188,14 @@ void main()
 
     }
 
-    if(toggleNormalMap)
-    {
+
     norm = texture(normalMap,texCoords).xyz;
     norm = norm*2.0-1.0;
     norm = normalize(TBN * norm);
-    }
-    else
-    {
-    norm = normalize(normal);
-    }
+    
+
+    //norm = normalize(normal);
+    
 
 
 

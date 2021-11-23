@@ -10,9 +10,9 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	unsigned int cubeSpecular = loadTexture("..\\resources\\metalPlate\\specular.jpg");
 	unsigned int cubeNormalM = loadTexture("..\\resources\\metalPlate\\normal.jpg");
 
-	unsigned int planeDiffTexture = loadTexture("..\\resources\\tiles\\diffuse.jpg");
-	unsigned int planeDisp = loadTexture("..\\resources\\tiles\\displ.png");
-	unsigned int planeNormalM = loadTexture("..\\resources\\tiles\\normal.png");
+	unsigned int planeDiffTexture = loadTexture("..\\resources\\bricks\\diffuse.jpg");
+	unsigned int planeDisp = loadTexture("..\\resources\\bricks\\displ.png");
+	unsigned int planeNormalM = loadTexture("..\\resources\\bricks\\normal.jpg");
 
 
 	glActiveTexture(GL_TEXTURE0);
@@ -77,8 +77,8 @@ void Renderer::RenderScene( Camera camera)
 	shaders[1].setVec3("viewPos", camera.Position);
 	shaders[1].setMat4("model", model);
 
-	cube1.assignShader(shaders[0]);
 	plane1.assignShader(shaders[1]);
+	cube1.assignShader(shaders[0]);
 
 	plane1.Render();
 	cube1.Render();

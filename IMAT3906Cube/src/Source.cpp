@@ -134,7 +134,7 @@ void processInput(GLFWwindow *window)
 		else useNormalMap = 1;
 
 	}
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 	{
 		if (useDispMap == 1) useDispMap = 0;
 		else useDispMap = 1;
