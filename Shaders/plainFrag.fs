@@ -38,12 +38,14 @@ uniform spotLight sLight;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 uniform sampler2D normalMap;
+uniform sampler2D dispMap;
 
 uniform bool toggleNormalMap;
+uniform bool toggleDispMap;
 
 float ambientFactor = 0.5;
 float shine = 64;
-float specularStrength = 0.2;
+float specularStrength = 0.8;
 
 
 
@@ -112,9 +114,9 @@ vec3 PointLight(vec3 norm, vec3 viewDir)
     return result;
 }
 
-vec3 DirectionalLight(vec3 norm, vec3 viewDir)
+vec3 DirectionalLight(vec3 norm, vec3 viewDir,vec2 texCoords)
 {
-    vec3 diffMapColor = texture(diffuseTexture, uv).xyz;
+    vec3 diffMapColor = texture(diffuseTexture, texCoords).xyz;
 
 //Ambient
 vec3 ambientColor = lightCol * diffMapColor * ambientFactor;
@@ -129,7 +131,7 @@ vec3 reflectDir = reflect(lightDir,norm);
 float specularFactor = dot(viewDir, reflectDir);
 specularFactor = max(specularFactor, 0.0);
 specularFactor = pow(specularFactor, shine);
-vec3 specluarColor = lightCol * specularFactor * specularStrength *texture(specularTexture,uv).x;
+vec3 specluarColor = lightCol * specularFactor * specularStrength *texture(specularTexture,texCoords).x;
 
 vec3 result = ambientColor + diffuseColor + specluarColor;
 return result;
@@ -146,14 +148,30 @@ return color;
 }
 
 
+vec2 ParallaxMapping(vec2 texCoords,vec3 viewDir)
+{
+float height = texture(dispMap,texCoords).r;
+return texCoords - (viewDir.xy) * (height * 0.0175);
+}
+
 
 void main()
 {    	
     
     vec3 norm;
+
+    vec2 texCoords = uv;
+    vec3 viewDir = normalize(viewPos - posWS);
+
+    if(toggleDispMap)
+    {
+    texCoords = ParallaxMapping(uv,viewDir);
+
+    }
+
     if(toggleNormalMap)
     {
-    norm = texture(normalMap,uv).xyz;
+    norm = texture(normalMap,texCoords).xyz;
     norm = norm*2.0-1.0;
     norm = normalize(TBN * norm);
     }
@@ -161,11 +179,14 @@ void main()
     {
     norm = normalize(normal);
     }
-    
-    vec3 viewDir = normalize(viewPos - posWS);
+
+
+
+
 
     //vec3 result =  SpotLight(norm,viewDir) + PointLight(norm,viewDir) ;
-    vec3 result =  DirectionalLight(norm,viewDir) ;
+    vec3 result =  DirectionalLight(norm,viewDir,texCoords) ;
+
 
     FragColor = vec4(result, 1.0f);
 }

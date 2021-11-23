@@ -26,13 +26,7 @@ private:
 	void setUniforms(Shader& shader, Camera camera);
 
 	unsigned int loadTexture(char const* path);
-	void RenderCube(Shader& shader);
-	void RenderPlane(Shader& shader);
 
-	void CreateCube();
-	void CreateFloor();
-
-	unsigned int  planeVAO, planeVBO, planeEBO;
 
 	Cube cube1;
 	Plane plane1;

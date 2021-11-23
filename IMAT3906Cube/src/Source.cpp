@@ -26,7 +26,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-unsigned int loadTexture(char const* path);
 
 
 
@@ -45,6 +44,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool useNormalMap = 0;
+bool useDispMap = 0;
 
 
 
@@ -97,6 +97,12 @@ int main()
 		
 		renderer.RenderScene(camera);
 		renderer.shaders[0].setBool("toggleNormalMap", useNormalMap);
+
+		renderer.shaders[1].use();
+		renderer.shaders[1].setBool("toggleDispMap", useDispMap);
+		renderer.shaders[1].setBool("toggleNormalMap", useNormalMap);
+
+
 	
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -127,6 +133,11 @@ void processInput(GLFWwindow *window)
 		if (useNormalMap == 1) useNormalMap = 0;
 		else useNormalMap = 1;
 
+	}
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		if (useDispMap == 1) useDispMap = 0;
+		else useDispMap = 1;
 	}
 }
 

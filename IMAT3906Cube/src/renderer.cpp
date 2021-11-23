@@ -8,21 +8,33 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 
 	unsigned int cubeDiffTexture = loadTexture("..\\resources\\metalPlate\\diffuse.jpg");
 	unsigned int cubeSpecular = loadTexture("..\\resources\\metalPlate\\specular.jpg");
-	unsigned int planeDiffTexture = loadTexture("..\\resources\\metalRust\\diffuse.jpg");
 	unsigned int cubeNormalM = loadTexture("..\\resources\\metalPlate\\normal.jpg");
+
+	unsigned int planeDiffTexture = loadTexture("..\\resources\\tiles\\diffuse.jpg");
+	unsigned int planeDisp = loadTexture("..\\resources\\tiles\\displ.png");
+	unsigned int planeNormalM = loadTexture("..\\resources\\tiles\\normal.png");
 
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, cubeDiffTexture);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, planeDiffTexture);
-
-	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, cubeNormalM);
 
-	glActiveTexture(GL_TEXTURE3);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, cubeSpecular);
+
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, planeDiffTexture);
+
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, planeDisp);
+
+
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, planeNormalM);
 
 
 	// simple vertex and fragment shader 
@@ -32,25 +44,22 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
 
-	shaders[0].use();
-
-
-	shaders[1].use();
-
-
 
 	plane1 = Plane(floorShader);
-	plane1.assignTexture(1);
+	plane1.assignTexture(3);
+	plane1.assignNormalMap(5);
+	plane1.assignDispMap(4);
 
 	cube1 = Cube(cubeShader);
 	cube1.assignTexture(0);
-	cube1.assignNormalMap(2);
-	cube1.assignSpecularMap(3);
+	cube1.assignNormalMap(1);
+	cube1.assignSpecularMap(2);
 }
 
 void Renderer::RenderScene( Camera camera)
 {
 
+	shaders[0].use();
 	// MVP 
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
 	glm::mat4 view = camera.GetViewMatrix();
@@ -62,7 +71,7 @@ void Renderer::RenderScene( Camera camera)
 	model = glm::mat4(1.0f);
 	shaders[0].setMat4("model", model);
 
-
+	shaders[1].use();
 	shaders[1].setMat4("projection", projection);
 	shaders[1].setMat4("view", view);
 	shaders[1].setVec3("viewPos", camera.Position);
@@ -71,8 +80,8 @@ void Renderer::RenderScene( Camera camera)
 	cube1.assignShader(shaders[0]);
 	plane1.assignShader(shaders[1]);
 
-	cube1.Render();
 	plane1.Render();
+	cube1.Render();
 }
 
 void Renderer::assignCamera(Camera& cam)
@@ -82,25 +91,9 @@ void Renderer::assignCamera(Camera& cam)
 	setUniforms(shaders[0], *camera);
 }
 
-void Renderer::RenderCube(Shader& shader)
-{
-	
-}
-
-void Renderer::RenderPlane(Shader& shader)
-{
-}
-
-void Renderer::CreateCube()
-{
-}
-
-void Renderer::CreateFloor()
-{
-}
-
 void Renderer::setUniforms(Shader& shader, Camera camera)
 {
+	shader.use();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
 
 	glm::vec3 lightDirection = glm::vec3(0, -1, 0);

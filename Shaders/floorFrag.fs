@@ -5,6 +5,7 @@ out vec4 FragColor;
 in vec3 normal;
 in vec3 posWS;
 in vec2 uv;
+in mat3 TBN;
 
 struct pointLight
 {
@@ -35,10 +36,16 @@ uniform vec3 viewPos;
 uniform pointLight pLight;
 uniform spotLight sLight;
 uniform sampler2D diffuseTexture;
+uniform sampler2D specularTexture;
+uniform sampler2D normalMap;
+uniform sampler2D dispMap;
+
+uniform bool toggleNormalMap;
+uniform bool toggleDispMap;
 
 float ambientFactor = 0.5;
 float shine = 64;
-float specularStrength = 0.2;
+float specularStrength = 0.8;
 
 
 
@@ -107,24 +114,24 @@ vec3 PointLight(vec3 norm, vec3 viewDir)
     return result;
 }
 
-vec3 DirectionalLight(vec3 norm, vec3 viewDir)
+vec3 DirectionalLight(vec3 norm, vec3 viewDir,vec2 texCoords)
 {
-    vec3 diffMapColor = texture(diffuseTexture, uv).xyz;
+    vec3 diffMapColor = texture(diffuseTexture, texCoords).xyz;
 
 //Ambient
 vec3 ambientColor = lightCol * diffMapColor * ambientFactor;
 
 //diffuse
-float diffuseFactor = dot(norm, -lightDir);
+float diffuseFactor = dot(norm, lightDir);
 diffuseFactor = max(diffuseFactor, 0.0);
 vec3 diffuseColor = lightCol*diffMapColor*diffuseFactor;
 
 //specular
-vec3 reflectDir = -lightDir;
+vec3 reflectDir = reflect(lightDir,norm);
 float specularFactor = dot(viewDir, reflectDir);
 specularFactor = max(specularFactor, 0.0);
 specularFactor = pow(specularFactor, shine);
-vec3 specluarColor = lightCol * specularFactor * specularStrength;
+vec3 specluarColor = lightCol * specularFactor * specularStrength *texture(specularTexture,texCoords).x;
 
 vec3 result = ambientColor + diffuseColor + specluarColor;
 return result;
@@ -141,13 +148,45 @@ return color;
 }
 
 
+vec2 ParallaxMapping(vec2 texCoords,vec3 viewDir)
+{
+float height = texture(dispMap,texCoords).r;
+return texCoords - (viewDir.xy) * (height * 0.0175);
+}
+
 
 void main()
 {    	
-    vec3 norm = normalize(normal);
+    
+    vec3 norm;
+
+    vec2 texCoords = uv;
     vec3 viewDir = normalize(viewPos - posWS);
 
-    vec3 result =  SpotLight(norm,viewDir) + PointLight(norm,viewDir) ;
+    if(toggleDispMap)
+    {
+    texCoords = ParallaxMapping(uv,viewDir);
+
+    }
+
+    if(toggleNormalMap)
+    {
+    norm = texture(normalMap,texCoords).xyz;
+    norm = norm*2.0-1.0;
+    norm = normalize(TBN * norm);
+    }
+    else
+    {
+    norm = normalize(normal);
+    }
+
+
+
+
+
+    //vec3 result =  SpotLight(norm,viewDir) + PointLight(norm,viewDir) ;
+    vec3 result =  DirectionalLight(norm,viewDir,texCoords) ;
+
 
     FragColor = vec4(result, 1.0f);
 }

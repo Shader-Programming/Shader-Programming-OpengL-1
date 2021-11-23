@@ -86,6 +86,8 @@ void Plane::Render()
 {
 	m_shader->use();
 	m_shader->setInt("diffuseTexture", m_textureId);
+	m_shader->setInt("normalMap", m_normalMapId);
+	m_shader->setInt("dispMap", m_dispMapId);
 	glm::mat4 model = glm::mat4(1.0f);
 	m_shader->setMat4("model", model);
 	m_shader->setVec3("objectCol", m_color);
@@ -101,4 +103,14 @@ void Plane::assignTexture(unsigned int id)
 void Plane::assignShader(Shader& planeShader)
 {
 	m_shader = &planeShader;
+}
+
+void Plane::assignNormalMap(unsigned int id)
+{
+	m_normalMapId = id;
+}
+
+void Plane::assignDispMap(unsigned int id)
+{
+	m_dispMapId = id;
 }
