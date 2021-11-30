@@ -59,6 +59,9 @@ Plane::Plane(Shader& planeShader)
 		3,1,0
 	};
 
+
+	UpdateVertexData(&planeVertices.at(0), 32, planeIndices.data(), 6);
+
 	//Floor
 	glGenVertexArrays(1, &planeVAO);
 	glGenBuffers(1, &planeVBO);
@@ -67,20 +70,30 @@ Plane::Plane(Shader& planeShader)
 	glBindVertexArray(planeVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, planeVertices.size()*sizeof(float), &planeVertices.at(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, updatedVertexData.size()*sizeof(float), &updatedVertexData.at(0), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planeEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,planeIndices.size() * sizeof(unsigned int), &planeIndices.at(0), GL_STATIC_DRAW);
 
 	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	// normal attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	// UV attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
+
+	// tan attribute
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(8 * sizeof(float)));
+	glEnableVertexAttribArray(3);
+
+	// Bitan attribute
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(11 * sizeof(float)));
+	glEnableVertexAttribArray(4);
+
+
 }
 void Plane::Render()
 {
@@ -91,6 +104,8 @@ void Plane::Render()
 	glm::mat4 model = glm::mat4(1.0f);
 	m_shader->setMat4("model", model);
 	m_shader->setVec3("objectCol", m_color);
+
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
 	glBindVertexArray(planeVAO);  // bind and draw floor
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

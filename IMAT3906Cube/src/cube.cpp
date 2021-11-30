@@ -138,7 +138,9 @@ void Cube::Render()
 	glm::mat4 model = glm::mat4(1.0f);
 	m_shader->setVec3("objectCol", m_color);
 
+
 	glBindVertexArray(cubeVAO);  // bind and draw cube
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);

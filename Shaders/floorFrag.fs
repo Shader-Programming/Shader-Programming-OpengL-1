@@ -42,9 +42,9 @@ uniform sampler2D specularTexture;
 uniform bool toggleNormalMap;
 uniform bool toggleDispMap;
 
-float ambientFactor = 0.5;
+float ambientFactor = 0.1;
 float shine = 64;
-float specularStrength = 0.8;
+float specularStrength = 0.6;
 
 
 
@@ -118,7 +118,7 @@ vec3 DirectionalLight(vec3 norm, vec3 viewDir,vec2 texCoords)
     vec3 diffMapColor = texture(diffuseTexture, texCoords).xyz;
 
 //Ambient
-vec3 ambientColor = lightCol * diffMapColor * ambientFactor;
+vec3 ambientColor = lightCol * ambientFactor;
 
 //diffuse
 float diffuseFactor = dot(norm, -lightDir);
@@ -130,7 +130,7 @@ vec3 reflectDir = reflect(lightDir,norm);
 float specularFactor = dot(viewDir, reflectDir);
 specularFactor = max(specularFactor, 0.0);
 specularFactor = pow(specularFactor, shine);
-vec3 specluarColor = lightCol * specularFactor * specularStrength *texture(specularTexture,texCoords).x;
+vec3 specluarColor = lightCol * specularFactor * specularStrength;
 
 vec3 result = ambientColor + diffuseColor + specluarColor;
 return result;
@@ -150,7 +150,7 @@ return color;
 vec2 ParallaxMapping(vec2 texCoords,vec3 viewDir)
 {
 float height = texture(dispMap,texCoords).r;
-return texCoords - (viewDir.xy) * (height * 0.0175);
+return texCoords - (viewDir.xy) * (height * 0.0185);
 }
 
 //vec2 SteepParallaxMapping(vec2 texCoords,vec3 viewDir)
@@ -188,13 +188,20 @@ void main()
 
     }
 
+    if(toggleNormalMap)
+    {
 
     norm = texture(normalMap,texCoords).xyz;
     norm = norm*2.0-1.0;
     norm = normalize(TBN * norm);
     
+    }
+    else
 
-    //norm = normalize(normal);
+    {
+
+    norm = normalize(normal);
+    }
     
 
 
