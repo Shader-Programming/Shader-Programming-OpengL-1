@@ -146,6 +146,7 @@
     <ClInclude Include="include\cube.h" />
     <ClInclude Include="include\entity.h" />
     <ClInclude Include="include\plane.h" />
+    <ClInclude Include="include\Quad.h" />
     <ClInclude Include="include\renderer.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\stb_image.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="src\entity.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\plane.cpp" />
+    <ClCompile Include="src\Quad.cpp" />
     <ClCompile Include="src\renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Source.cpp" />

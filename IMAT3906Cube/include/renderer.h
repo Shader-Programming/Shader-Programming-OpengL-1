@@ -14,6 +14,7 @@
 #include "Camera.h"
 #include "cube.h"
 #include "plane.h"
+#include "Quad.h"
 
 
 class Renderer {
@@ -22,8 +23,13 @@ public:
 	void RenderScene( Camera camera);
 	std::vector<Shader> shaders;
 	void assignCamera(Camera& cam);
+	unsigned int FBO;
+	void setFBOColour();
+	Quad quad;
 private:
+
 	void setUniforms(Shader& shader, Camera camera);
+	
 
 	unsigned int loadTexture(char const* path);
 
@@ -35,6 +41,7 @@ private:
 	glm::vec3 floorColor = glm::vec3(0.1, 0.3, 0.3);
 
 	unsigned int screenWidth, screenHeight;
+	unsigned int colourAttachment;
 
 };
 

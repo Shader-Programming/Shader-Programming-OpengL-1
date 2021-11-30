@@ -79,11 +79,11 @@ int main()
 
 	//Renderer
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+	renderer.setFBOColour();
+	
+
 
 	
-	glEnable(GL_DEPTH_TEST);
-
-
 	renderer.assignCamera(camera);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -92,6 +92,14 @@ int main()
 		lastFrame = currentFrame;
 
 		processInput(window);
+
+		// 1st pass to FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
+		glEnable(GL_DEPTH_TEST);
+
+
+
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 		
@@ -102,6 +110,10 @@ int main()
 		renderer.shaders[1].setBool("toggleDispMap", useDispMap);
 		renderer.shaders[1].setBool("toggleNormalMap", useNormalMap);
 
+		//2nd pass render to screen - Quad, Vao, anotherShader
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		glDisable(GL_DEPTH_TEST);
+		renderer.quad.Draw();
 
 	
 		glfwSwapBuffers(window);

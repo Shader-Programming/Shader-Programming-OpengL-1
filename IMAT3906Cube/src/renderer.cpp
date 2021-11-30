@@ -41,8 +41,11 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	Shader cubeShader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	Shader floorShader("..\\shaders\\plainVert.vs", "..\\shaders\\floorFrag.fs");
 
+	Shader postProcessingShader("..\\shaders\\postprocessing.vs", "..\\shaders\\postprocessing.fs");
+
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
+	shaders.push_back(postProcessingShader);
 
 
 	plane1 = Plane(floorShader);
@@ -54,6 +57,8 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	cube1.assignTexture(0);
 	cube1.assignNormalMap(1);
 	cube1.assignSpecularMap(2);
+
+	quad = Quad(shaders[2]);
 }
 
 void Renderer::RenderScene( Camera camera)
@@ -125,6 +130,21 @@ void Renderer::setUniforms(Shader& shader, Camera camera)
 	shader.setFloat("sLight.Ke", 0.0028f);
 	shader.setFloat("sLight.innerRad", glm::cos(glm::radians(12.5f)));
 	shader.setFloat("sLight.outerRad", glm::cos(glm::radians(17.5f)));
+}
+
+void Renderer::setFBOColour()
+{
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glGenTextures(1, &colourAttachment);
+	glBindTexture(GL_TEXTURE_2D, colourAttachment);
+
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourAttachment, 0);
+
 }
 
 unsigned int Renderer::loadTexture(char const* path)
