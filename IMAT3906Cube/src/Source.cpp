@@ -79,6 +79,8 @@ int main()
 
 	//Renderer
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+	renderer.shaders[2].use();
+	renderer.shaders[2].setInt("image", 6);
 	renderer.setFBOColour();
 	
 
@@ -95,12 +97,12 @@ int main()
 
 		// 1st pass to FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
-		glEnable(GL_DEPTH_TEST);
 
 
 
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+		glEnable(GL_DEPTH_TEST);
 
 		
 		renderer.RenderScene(camera);
@@ -113,7 +115,7 @@ int main()
 		//2nd pass render to screen - Quad, Vao, anotherShader
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glDisable(GL_DEPTH_TEST);
-		renderer.quad.Draw();
+		renderer.quad.Draw(renderer.colourAttachment);
 
 	
 		glfwSwapBuffers(window);

@@ -69,7 +69,7 @@ Plane::Plane(Shader& planeShader)
 
 	glBindVertexArray(planeVAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	//glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
 	glBufferData(GL_ARRAY_BUFFER, updatedVertexData.size()*sizeof(float), &updatedVertexData.at(0), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planeEBO);

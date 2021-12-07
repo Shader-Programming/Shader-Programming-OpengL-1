@@ -9,6 +9,7 @@
 class Quad
 {
 public:
+	Quad() {};
 	Quad(Shader& quadShader);
 	unsigned int quadVAO,quadVBO;
 	Shader* m_shader;
