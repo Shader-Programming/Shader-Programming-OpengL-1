@@ -45,11 +45,13 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 
 	Shader postProcessingShader("..\\shaders\\postprocessing.vs", "..\\shaders\\postprocessing.fs");
 	Shader depthShader("..\\shaders\\postprocessing.vs", "..\\shaders\\renderDepth.fs");
+	Shader blurShader("..\\shaders\\postprocessing.vs", "..\\shaders\\blur.fs");
 
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
 	shaders.push_back(postProcessingShader);
 	shaders.push_back(depthShader);
+	shaders.push_back(blurShader);
 
 
 	plane1 = Plane(shaders[1]);
@@ -140,14 +142,24 @@ void Renderer::setFBOColour()
 {
 	glGenFramebuffers(1, &FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-	glGenTextures(1, &colourAttachment);
-	glBindTexture(GL_TEXTURE_2D, colourAttachment);
 
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glGenTextures(2, colourAttachment);
+
+	for (int i = 0; i < 3; i++)
+	{
+	glBindTexture(GL_TEXTURE_2D, colourAttachment[i]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourAttachment, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, colourAttachment[i], 0);
+	}
+
+
+
+
 
 	glGenTextures(1, &depthAttachment);
 	glBindTexture(GL_TEXTURE_2D, depthAttachment);
@@ -156,6 +168,23 @@ void Renderer::setFBOColour()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachment, 0);
+
+	
+
+	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+
+	glGenFramebuffers(1, &FBOBlur);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOBlur);
+	glGenTextures(1, &blurredTexture);
+	glBindTexture(GL_TEXTURE_2D, blurredTexture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredTexture, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 

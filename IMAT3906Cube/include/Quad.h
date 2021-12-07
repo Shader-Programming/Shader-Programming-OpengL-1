@@ -14,4 +14,5 @@ public:
 	unsigned int quadVAO,quadVBO;
 	Shader* m_shader;
 	void Draw( const unsigned int& textureObj);
+	void Draw(Shader& shader, const unsigned int& textureObj);
 };

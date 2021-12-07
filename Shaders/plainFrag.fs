@@ -1,6 +1,7 @@
 #version 410 core
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 brightColor;
 
 in vec3 normal;
 in vec3 posWS;
@@ -189,5 +190,11 @@ void main()
 
 
     FragColor = vec4(result, 1.0f);
+    //float brightness = (result.x + result.y + result.z) /3;
+    float brightness = max(max(result.r,result.g),result.b);
+    if(brightness > 0.7)
+        brightColor = FragColor;
+    else
+        brightColor = vec4(vec3(0.0),1.0);
 }
 

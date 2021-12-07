@@ -114,12 +114,26 @@ int main()
 		renderer.shaders[2].setInt("image", 7);
 
 
-		renderer.shaders[3].setInt("image", 8);
+		renderer.shaders[4].use();
+		renderer.shaders[4].setInt("image", 7);
+
+
+		// Blur
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBOBlur);
+		glDisable(GL_DEPTH_TEST);
+
+
+
+		renderer.shaders[4].use();
+		renderer.shaders[4].setBool("horizontal",true);
+		renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0]);
+		renderer.shaders[4].setBool("horizontal", false);
+		renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0]);
 
 		//3rd pass render to screen - quad vao
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
-		renderer.quad.Draw(renderer.colourAttachment);
+		renderer.quad.Draw(renderer.shaders[2],renderer.blurredTexture);
 
 	
 		glfwSwapBuffers(window);
