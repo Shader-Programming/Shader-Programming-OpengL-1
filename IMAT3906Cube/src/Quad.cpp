@@ -27,7 +27,7 @@ Quad::Quad(Shader& quadShader)
 void Quad::Draw (const unsigned int& textureObj)
 {
 	m_shader->use();
-	glActiveTexture(GL_TEXTURE6);
+	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D, textureObj);
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

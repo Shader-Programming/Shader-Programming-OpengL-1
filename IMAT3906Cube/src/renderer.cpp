@@ -36,6 +36,8 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_2D, planeNormalM);
 
+	glActiveTexture(GL_TEXTURE6);
+
 
 	// simple vertex and fragment shader 
 	Shader cubeShader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");

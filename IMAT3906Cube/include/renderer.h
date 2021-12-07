@@ -27,7 +27,7 @@ public:
 	void setFBOColour();
 	void setFBODepth();
 	Quad quad;
-	unsigned int colourAttachment;
+	unsigned int colourAttachment, depthAttachment;
 private:
 
 	void setUniforms(Shader& shader, Camera camera);
