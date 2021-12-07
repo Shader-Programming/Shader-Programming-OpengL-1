@@ -63,6 +63,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	glDeleteShader(fragment);
 	//if (geometryPath != nullptr)
 
+	std::cout << vertexPath<<"\n";
+	std::cout << fragmentPath<<"\n";
+
 
 }
 

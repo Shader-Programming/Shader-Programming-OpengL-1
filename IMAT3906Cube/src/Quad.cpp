@@ -24,7 +24,7 @@ Quad::Quad(Shader& quadShader)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
 }
 
-void Quad::Draw(unsigned int& textureObj)
+void Quad::Draw (const unsigned int& textureObj)
 {
 	m_shader->use();
 	glActiveTexture(GL_TEXTURE6);

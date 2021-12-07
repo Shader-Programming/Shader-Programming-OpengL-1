@@ -79,10 +79,11 @@ int main()
 
 	//Renderer
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
-	renderer.shaders[2].use();
-	renderer.shaders[2].setInt("image", 6);
-	renderer.setFBOColour();
-	
+
+	//renderer.shaders[2].use();
+	//renderer.setFBOColour();
+	//renderer.shaders[3].use();
+	//renderer.setFBODepth();
 
 
 	
@@ -94,9 +95,11 @@ int main()
 		lastFrame = currentFrame;
 
 		processInput(window);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// 1st pass to FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
+		//glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
+		glEnable(GL_DEPTH_TEST);
 
 
 
@@ -112,10 +115,23 @@ int main()
 		renderer.shaders[1].setBool("toggleDispMap", useDispMap);
 		renderer.shaders[1].setBool("toggleNormalMap", useNormalMap);
 
-		//2nd pass render to screen - Quad, Vao, anotherShader
-		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		//renderer.shaders[2].use();
+		//renderer.shaders[2].setInt("image", 6);
+
+
+		//renderer.shaders[3].setInt("image", 7);
+
+		//2nd pass for depth
+		//glBindFramebuffer(GL_FRAMEBUFFER,renderer.FBODepth);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+	
+		renderer.RenderScene(camera);
+
+		//3rd pass render to screen - quad vao
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
-		renderer.quad.Draw(renderer.colourAttachment);
+		//renderer.quad.Draw(renderer.getColourAttachment());
 
 	
 		glfwSwapBuffers(window);
