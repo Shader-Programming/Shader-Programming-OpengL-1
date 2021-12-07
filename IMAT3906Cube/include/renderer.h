@@ -23,9 +23,11 @@ public:
 	void RenderScene( Camera camera);
 	std::vector<Shader> shaders;
 	void assignCamera(Camera& cam);
-	unsigned int FBO;
+	unsigned int FBO,FBODepth;
 	void setFBOColour();
+	void setFBODepth();
 	Quad quad;
+	inline unsigned int  getColourAttachment() const { return colourAttachment; };
 private:
 
 	void setUniforms(Shader& shader, Camera camera);
@@ -41,7 +43,7 @@ private:
 	glm::vec3 floorColor = glm::vec3(0.1, 0.3, 0.3);
 
 	unsigned int screenWidth, screenHeight;
-	unsigned int colourAttachment;
+	unsigned int colourAttachment, depthAttachment;
 
 };
 

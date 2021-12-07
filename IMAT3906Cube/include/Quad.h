@@ -9,8 +9,9 @@
 class Quad
 {
 public:
+	Quad() {};
 	Quad(Shader& quadShader);
 	unsigned int quadVAO,quadVBO;
 	Shader* m_shader;
-	void Draw( unsigned int& textureObj);
+	void Draw( const unsigned int& textureObj);
 };

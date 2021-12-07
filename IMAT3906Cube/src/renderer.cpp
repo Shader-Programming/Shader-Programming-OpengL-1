@@ -42,18 +42,20 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	Shader floorShader("..\\shaders\\plainVert.vs", "..\\shaders\\floorFrag.fs");
 
 	Shader postProcessingShader("..\\shaders\\postprocessing.vs", "..\\shaders\\postprocessing.fs");
+	Shader depthShader("..\\shaders\\postprocessing.vs", "..\\shaders\\renderDepth.fs");
 
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
 	shaders.push_back(postProcessingShader);
+	shaders.push_back(depthShader);
 
 
-	plane1 = Plane(floorShader);
+	plane1 = Plane(shaders[1]);
 	plane1.assignTexture(3);
 	plane1.assignNormalMap(5);
 	plane1.assignDispMap(4);
 
-	cube1 = Cube(cubeShader);
+	cube1 = Cube(shaders[0]);
 	cube1.assignTexture(0);
 	cube1.assignNormalMap(1);
 	cube1.assignSpecularMap(2);
@@ -145,6 +147,23 @@ void Renderer::setFBOColour()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourAttachment, 0);
 
+	glGenTextures(1, &depthAttachment);
+	glBindTexture(GL_TEXTURE_2D, depthAttachment);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, screenWidth, screenHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachment, 0);
+
+}
+
+void Renderer::setFBODepth()
+{
+	glGenFramebuffers(1, &FBODepth);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBODepth);
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 unsigned int Renderer::loadTexture(char const* path)
