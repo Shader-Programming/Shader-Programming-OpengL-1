@@ -45,6 +45,7 @@ float lastFrame = 0.0f;
 
 bool useNormalMap = 0;
 bool useDispMap = 0;
+bool toggleBlur = 0;
 
 
 
@@ -113,8 +114,11 @@ int main()
 		renderer.shaders[2].use();
 		renderer.shaders[2].setInt("image", 7);
 
+		
+
 
 		renderer.shaders[4].use();
+		renderer.shaders[4].setBool("blurToggle", toggleBlur);
 		renderer.shaders[4].setInt("image", 7);
 
 
@@ -170,6 +174,11 @@ void processInput(GLFWwindow *window)
 	{
 		if (useDispMap == 1) useDispMap = 0;
 		else useDispMap = 1;
+	}
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+	{
+		if (toggleBlur == 1) toggleBlur = 0;
+		else toggleBlur = 1;
 	}
 }
 

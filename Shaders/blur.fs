@@ -6,6 +6,7 @@ uniform bool horizontal;
 
 in vec2 uv;
 uniform sampler2D image;
+uniform bool blurToggle;
 
 float weights[] = {
 0.045588748213977244, 0.04469312448750337, 0.04323941779418976, 0.041283252881657614, 0.03889759757448154,
@@ -18,9 +19,13 @@ int r = 21;
 float bias = 1f;
 
 void main()
-{    
+{
+    vec3 color;
+
+if(blurToggle)
+{
     vec2 textureOffset = 1.0/textureSize(image,0);
-    vec3 color = texture(image,uv).rgb * (weights[0]*bias);
+    color = texture(image,uv).rgb * (weights[0]*bias);
     if(horizontal)
     {
         for(int i = 1; i<r;i++)
@@ -38,6 +43,12 @@ void main()
         }
     }
 
-    FragColor = vec4(color, 1.0);
+    
+}
+else
+{
+    color = texture(image,uv).rgb;
+}
+FragColor = vec4(color, 1.0);
 }
 

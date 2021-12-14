@@ -46,12 +46,14 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	Shader postProcessingShader("..\\shaders\\postprocessing.vs", "..\\shaders\\postprocessing.fs");
 	Shader depthShader("..\\shaders\\postprocessing.vs", "..\\shaders\\renderDepth.fs");
 	Shader blurShader("..\\shaders\\postprocessing.vs", "..\\shaders\\blur.fs");
+	Shader depthOfFieldShader("..\\shaders\\postprocessing.vs", "..\\shaders\\depthOfField.fs");
 
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
 	shaders.push_back(postProcessingShader);
 	shaders.push_back(depthShader);
 	shaders.push_back(blurShader);
+	shaders.push_back(depthOfFieldShader);
 
 
 	plane1 = Plane(shaders[1]);
@@ -183,6 +185,8 @@ void Renderer::setFBOColour()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredTexture, 0);
+
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

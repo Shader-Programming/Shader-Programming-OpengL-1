@@ -23,11 +23,11 @@ public:
 	void RenderScene( Camera camera);
 	std::vector<Shader> shaders;
 	void assignCamera(Camera& cam);
-	unsigned int FBO,FBODepth,FBOBlur;
+	unsigned int FBO,FBODepth,FBOBlur, FBODepthOfField;
 	void setFBOColour();
 	void setFBODepth();
 	Quad quad;
-	unsigned int colourAttachment[2], depthAttachment,blurredTexture;
+	unsigned int colourAttachment[2], depthAttachment,blurredTexture,dofTexture;
 private:
 
 	void setUniforms(Shader& shader, Camera camera);
