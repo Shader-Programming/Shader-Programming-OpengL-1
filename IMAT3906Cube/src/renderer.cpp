@@ -6,55 +6,11 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	screenHeight = sHeight;
 	screenWidth = sWidth;
 
-	unsigned int cubeDiffTexture = loadTexture("..\\resources\\metalPlate\\diffuse.jpg");
-	unsigned int cubeSpecular = loadTexture("..\\resources\\metalPlate\\specular.jpg");
-	unsigned int cubeNormalM = loadTexture("..\\resources\\metalPlate\\normal.jpg");
 
-	unsigned int planeDiffTexture = loadTexture("..\\resources\\bricks\\diffuse.jpg");
-	unsigned int planeDisp = loadTexture("..\\resources\\bricks\\displ.png");
-	unsigned int planeNormalM = loadTexture("..\\resources\\bricks\\normal.jpg");
+	
 
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, cubeDiffTexture);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, cubeNormalM);
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, cubeSpecular);
-
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, planeDiffTexture);
-
-
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, planeDisp);
-
-
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, planeNormalM);
-
-	glActiveTexture(GL_TEXTURE6);
-
-
-	// simple vertex and fragment shader 
-	Shader cubeShader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
-	Shader floorShader("..\\shaders\\plainVert.vs", "..\\shaders\\floorFrag.fs");
-
-	Shader postProcessingShader("..\\shaders\\postprocessing.vs", "..\\shaders\\postprocessing.fs");
-	Shader depthShader("..\\shaders\\postprocessing.vs", "..\\shaders\\renderDepth.fs");
-	Shader blurShader("..\\shaders\\postprocessing.vs", "..\\shaders\\blur.fs");
-	Shader depthOfFieldShader("..\\shaders\\postprocessing.vs", "..\\shaders\\depthOfField.fs");
-
-	shaders.push_back(cubeShader);
-	shaders.push_back(floorShader);
-	shaders.push_back(postProcessingShader);
-	shaders.push_back(depthShader);
-	shaders.push_back(blurShader);
-	shaders.push_back(depthOfFieldShader);
-
+	loadShaders();
+	loadTextures();
 
 	plane1 = Plane(shaders[1]);
 	plane1.assignTexture(3);
@@ -104,6 +60,60 @@ void Renderer::assignCamera(Camera& cam)
 	setUniforms(shaders[0], *camera);
 }
 
+void Renderer::loadShaders()
+{
+
+	Shader cubeShader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
+	Shader floorShader("..\\shaders\\plainVert.vs", "..\\shaders\\floorFrag.fs");
+
+	Shader postProcessingShader("..\\shaders\\postprocessing.vs", "..\\shaders\\postprocessing.fs");
+	Shader depthShader("..\\shaders\\postprocessing.vs", "..\\shaders\\renderDepth.fs");
+	Shader blurShader("..\\shaders\\postprocessing.vs", "..\\shaders\\blur.fs");
+	Shader depthOfFieldShader("..\\shaders\\postprocessing.vs", "..\\shaders\\depthOfField.fs");
+
+	shaders.push_back(cubeShader);
+	shaders.push_back(floorShader);
+	shaders.push_back(postProcessingShader);
+	shaders.push_back(depthShader);
+	shaders.push_back(blurShader);
+	shaders.push_back(depthOfFieldShader);
+}
+
+void Renderer::loadTextures()
+{
+	unsigned int cubeDiffTexture = loadTexture("..\\resources\\metalPlate\\diffuse.jpg");
+	unsigned int cubeSpecular = loadTexture("..\\resources\\metalPlate\\specular.jpg");
+	unsigned int cubeNormalM = loadTexture("..\\resources\\metalPlate\\normal.jpg");
+
+	unsigned int planeDiffTexture = loadTexture("..\\resources\\bricks\\diffuse.jpg");
+	unsigned int planeDisp = loadTexture("..\\resources\\bricks\\displ.png");
+	unsigned int planeNormalM = loadTexture("..\\resources\\bricks\\normal.jpg");
+
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, cubeDiffTexture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, cubeNormalM);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, cubeSpecular);
+
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, planeDiffTexture);
+
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, planeDisp);
+
+
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, planeNormalM);
+
+	glActiveTexture(GL_TEXTURE6);
+}
+
 void Renderer::setUniforms(Shader& shader, Camera camera)
 {
 	shader.use();
@@ -113,8 +123,8 @@ void Renderer::setUniforms(Shader& shader, Camera camera)
 	glm::vec3 lightColor = glm::vec3(1.0, 1.0, 1.0);
 
 
-	shader.setVec3("lightCol", lightColor);
-	shader.setVec3("lightDir", lightDirection);
+	shader.setVec3("dLight.lightCol", lightColor);
+	shader.setVec3("dLight.lightDir", lightDirection);
 
 
 

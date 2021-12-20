@@ -2,16 +2,16 @@
 
 Entity::Entity()
 {
-	Vertex v;
+	VertexTanBiTan v;
 }
 
 void Entity::CalculateTanAndBitan(unsigned int* indicesData, int indiciesLength)
 {
 	for (int i = 0; i < indiciesLength; i = i + 3)
 	{
-		Vertex& a = verticies.at(indicesData[i]);
-		Vertex& b = verticies.at(indicesData[i+1]);
-		Vertex& c = verticies.at(indicesData[i+2]);
+		VertexTanBiTan& a = verticies.at(indicesData[i]);
+		VertexTanBiTan& b = verticies.at(indicesData[i+1]);
+		VertexTanBiTan& c = verticies.at(indicesData[i+2]);
 
 		glm::vec3 deltaPos1 = b.pos - a.pos;
 		glm::vec3 deltaPos2 = c.pos - a.pos;
@@ -33,7 +33,7 @@ void Entity::CalculateTanAndBitan(unsigned int* indicesData, int indiciesLength)
 		c.tan =c.tan + thisTangent;
 		c.biTan = c.biTan + thisBitangent;
 	}
-	for (Vertex& v : verticies)
+	for (VertexTanBiTan& v : verticies)
 	{
 		v.tan = glm::normalize(v.tan);
 		v.biTan = glm::normalize(v.biTan);
@@ -43,7 +43,7 @@ void Entity::CalculateTanAndBitan(unsigned int* indicesData, int indiciesLength)
 void Entity::UnpackVerticies()
 {
 	int stride = 14;
-	for (Vertex& v : verticies)
+	for (VertexTanBiTan& v : verticies)
 	{
 		float vertexData[] =
 		{
@@ -66,7 +66,7 @@ std::vector<float> Entity::GetUpdatedVextexData()
 
 void Entity::extractVertices(float* vertexData, int length)
 {
-	Vertex v; 
+	VertexTanBiTan v;
 	for (int i = 0; i < length; i = i + 8)
 	{
 		v.pos = glm::vec3(vertexData[i], vertexData[i + 1], vertexData[i + 2]); 

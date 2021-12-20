@@ -98,9 +98,9 @@ Plane::Plane(Shader& planeShader)
 void Plane::Render()
 {
 	m_shader->use();
-	m_shader->setInt("diffuseTexture", m_textureId);
-	m_shader->setInt("normalMap", m_normalMapId);
-	m_shader->setInt("dispMap", m_dispMapId);
+	m_shader->setInt("mat.diffuseTexture", m_textureId);
+	m_shader->setInt("mat.normalMap", m_normalMapId);
+	m_shader->setInt("mat.dispMap", m_dispMapId);
 	glm::mat4 model = glm::mat4(1.0f);
 	m_shader->setMat4("model", model);
 	m_shader->setVec3("objectCol", m_color);

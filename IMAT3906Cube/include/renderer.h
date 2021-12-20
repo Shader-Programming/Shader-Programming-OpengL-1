@@ -29,7 +29,8 @@ public:
 	Quad quad;
 	unsigned int colourAttachment[2], depthAttachment,blurredTexture,dofTexture;
 private:
-
+	void loadShaders();
+	void loadTextures();
 	void setUniforms(Shader& shader, Camera camera);
 	
 

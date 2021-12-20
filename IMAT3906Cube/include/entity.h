@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-struct Vertex
+struct VertexTanBiTan
 {
 	glm::vec3 pos;
 	glm::vec3 normal;
@@ -23,7 +23,7 @@ public:
 	void extractVertices(float* vertexData, int length);
 	void UpdateVertexData(float* vertexData, int length, unsigned int* indicesData, int indLenth);
 protected:
-	std::vector<Vertex> verticies;
+	std::vector<VertexTanBiTan> verticies;
 	std::vector<float> updatedVertexData;
 	//unsigned int* indicies;
 };
