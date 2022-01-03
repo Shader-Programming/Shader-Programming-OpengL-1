@@ -1,8 +1,7 @@
 #version 420 core
 
-out vec4 FragColor;
+layout (location = 1) out vec4 FragColor;
 
-uniform bool horizontal;
 
 in vec2 uv;
 uniform sampler2D inFocus;
@@ -10,7 +9,7 @@ uniform sampler2D outFocus;
 uniform sampler2D depthMap;
 
 uniform bool depthOfFieldToggle;
-
+uniform sampler2D image;
 
 
 void main()
@@ -29,7 +28,11 @@ if(depthOfFieldToggle)
 
     float depthDistance = distance(depthCoor,depthCurrentFragment);
 
-    color = Mix(inFocusFragment,outFocusFragment,depthDistance);
+
+    inFocusFragment = inFocusFragment * vec3(1,1,1);
+    color = mix(inFocusFragment,outFocusFragment,depthDistance);
+    
+
     
 }
 else

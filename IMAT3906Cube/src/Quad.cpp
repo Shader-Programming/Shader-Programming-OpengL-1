@@ -43,3 +43,28 @@ void Quad::Draw(Shader& shader, const unsigned int& textureObj)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
 }
+
+
+void Quad::Draw(const int& textureSlot, Shader& shader, const unsigned int& textureObj)
+{
+	shader.use();
+	glActiveTexture(GL_TEXTURE0 + textureSlot);
+	glBindTexture(GL_TEXTURE_2D, textureObj);
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+void Quad::Draw(Shader& shader, const unsigned int& textureObj, const unsigned int& textureObj2)
+{
+	shader.use();
+
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, textureObj);
+	glActiveTexture(GL_TEXTURE8);
+	glBindTexture(GL_TEXTURE_2D, textureObj2);
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}

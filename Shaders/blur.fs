@@ -1,11 +1,12 @@
 #version 420 core
 
-out vec4 FragColor;
-
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 brightColor;
 uniform bool horizontal;
 
 in vec2 uv;
 uniform sampler2D image;
+uniform sampler2D image2;
 uniform bool blurToggle;
 
 float weights[] = {
@@ -21,17 +22,21 @@ float bias = 1f;
 void main()
 {
     vec3 color;
+    vec3 color2;
 
 if(blurToggle)
 {
     vec2 textureOffset = 1.0/textureSize(image,0);
     color = texture(image,uv).rgb * (weights[0]*bias);
+    color2 = texture(image2,uv).rgb * (weights[0]*bias);
     if(horizontal)
     {
         for(int i = 1; i<r;i++)
         {
             color = color + texture(image, uv + vec2(textureOffset.x *i,0.0)).rgb * (weights[i]*bias);
             color = color + texture(image, uv - vec2(textureOffset.x *i,0.0)).rgb * (weights[i]*bias);
+            color2 = color2 + texture(image2, uv + vec2(textureOffset.x *i,0.0)).rgb * (weights[i]*bias);
+            color2 = color2 + texture(image2, uv - vec2(textureOffset.x *i,0.0)).rgb * (weights[i]*bias);
         }
     }
     else
@@ -40,6 +45,8 @@ if(blurToggle)
         {
             color = color + texture(image, uv + vec2(0.0,textureOffset.y *i)).rgb * (weights[i]*bias);
             color = color + texture(image, uv - vec2(0.0,textureOffset.y *i)).rgb * (weights[i]*bias);
+            color2 = color2 + texture(image2, uv + vec2(0.0,textureOffset.y *i)).rgb * (weights[i]*bias);
+            color2 = color2 + texture(image2, uv - vec2(0.0,textureOffset.y *i)).rgb * (weights[i]*bias);
         }
     }
 
@@ -48,7 +55,9 @@ if(blurToggle)
 else
 {
     color = texture(image,uv).rgb;
+    color2 = texture(image2,uv).rgb;
 }
 FragColor = vec4(color, 1.0);
+brightColor = vec4(color2,1.0);
 }
 

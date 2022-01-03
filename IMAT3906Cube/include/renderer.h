@@ -15,7 +15,7 @@
 #include "cube.h"
 #include "plane.h"
 #include "Quad.h"
-
+#include "LightParams.h"
 
 class Renderer {
 public:
@@ -27,11 +27,14 @@ public:
 	void setFBOColour();
 	void setFBODepth();
 	Quad quad;
-	unsigned int colourAttachment[2], depthAttachment,blurredTexture,dofTexture;
+	unsigned int colourAttachment[2], depthAttachment,blurredTextures[2],dofTexture;
+	void updatePointLightUniforms();
+	void updateSpotLightUniforms();
+	void setUniforms(Shader& shader, Camera camera);
 private:
 	void loadShaders();
 	void loadTextures();
-	void setUniforms(Shader& shader, Camera camera);
+	
 	
 
 	unsigned int loadTexture(char const* path);

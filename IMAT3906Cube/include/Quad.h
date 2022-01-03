@@ -15,4 +15,6 @@ public:
 	Shader* m_shader;
 	void Draw( const unsigned int& textureObj);
 	void Draw(Shader& shader, const unsigned int& textureObj);
+	void Draw(const int& textureSlot,Shader& shader, const unsigned int& textureObj);
+	void Draw(Shader& shader, const unsigned int& textureObj, const unsigned int& textureObj2);
 };

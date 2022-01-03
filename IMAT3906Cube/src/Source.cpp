@@ -1,3 +1,7 @@
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -10,6 +14,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "renderer.h"
+#include "LightParams.h"
 
 #include<string>
 #include <iostream>
@@ -17,11 +22,12 @@
 
 
 
+
 // settings
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 900;
 
-
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -44,16 +50,17 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-bool useNormalMap = 0;
-bool useDispMap = 0;
-bool toggleBlur = 0;
 
 
+//Parameters
+bool toggleInterract = 0;
 
 
 
 int main()
 {
+	
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -69,6 +76,7 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetKeyCallback(window, key_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -85,9 +93,18 @@ int main()
 	renderer.shaders[2].use();
 	renderer.setFBOColour();
 
-
-
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
 	
+
+	static const char* items[]{ "Directional Light","Point Light","Spot Light" };
+
+
+
 	renderer.assignCamera(camera);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -96,31 +113,35 @@ int main()
 		lastFrame = currentFrame;
 
 		processInput(window);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 		// 1st pass to FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-		glEnable(GL_DEPTH_TEST);
 
+		//UI stuff
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+
+		glEnable(GL_DEPTH_TEST);
 		
 		renderer.RenderScene(camera);
-		renderer.shaders[0].setBool("toggleNormalMap", useNormalMap);
+		renderer.shaders[0].use();
+		renderer.shaders[0].setBool("toggleNormalMap", LightParams::useNormalMap);
+		renderer.setUniforms(renderer.shaders[0],camera);
+		renderer.setUniforms(renderer.shaders[1],camera);
 
 		renderer.shaders[1].use();
-		renderer.shaders[1].setBool("toggleDispMap", useDispMap);
-		renderer.shaders[1].setBool("toggleNormalMap", useNormalMap);
+		renderer.shaders[1].setBool("toggleDispMap", LightParams::useDispMap);
+		renderer.shaders[1].setBool("toggleNormalMap", LightParams::useNormalMap);
 
 		renderer.shaders[2].use();
-		renderer.shaders[2].setInt("image", 7);
+		renderer.shaders[2].setInt("image", renderer.colourAttachment[0]);
 
-		
-
-
-		renderer.shaders[4].use();
-		renderer.shaders[4].setBool("blurToggle", toggleBlur);
-		renderer.shaders[4].setInt("image", 7);
+		renderer.updateSpotLightUniforms();
 
 
 		// Blur
@@ -130,21 +151,107 @@ int main()
 
 
 		renderer.shaders[4].use();
+		renderer.shaders[4].setBool("blurToggle", LightParams::toggleBlur);
+		renderer.shaders[4].setInt("image", 7);
+		renderer.shaders[4].setInt("image2", 8);
+
 		renderer.shaders[4].setBool("horizontal",true);
-		renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0]);
+		renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0], renderer.colourAttachment[1]);
 		renderer.shaders[4].setBool("horizontal", false);
-		renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0]);
+		renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0], renderer.colourAttachment[1]);
+
+
+
+		//Depth of field
+		//renderer.shaders[5].use();
+		//renderer.shaders[5].setBool("depthOfFieldToggle", 1);
+		//renderer.shaders[5].setInt("inFocus", renderer.colourAttachment[0]);
+		//renderer.shaders[5].setInt("outFocus", renderer.blurredTextures[0]);
+		//renderer.shaders[5].setInt("depthMap", renderer.depthAttachment);
+		//renderer.shaders[5].setInt("image", renderer.blurredTextures[0]);
+		//renderer.quad.Draw(renderer.shaders[5], renderer.blurredTextures[1]);
+
 
 		//3rd pass render to screen - quad vao
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_DEPTH_TEST);
-		renderer.quad.Draw(renderer.shaders[2],renderer.blurredTexture);
+		renderer.shaders[2].use();
+		renderer.shaders[2].setInt("image", 7);
+
+		renderer.shaders[6].use();
+		renderer.shaders[6].setInt("image", 7);
+		renderer.shaders[6].setInt("bloomBlur", 8);
+
+
+		
+		if (LightParams::toggleBloom)
+		{
+			LightParams::toggleBlur = true;
+			renderer.quad.Draw(renderer.shaders[6], renderer.colourAttachment[0], renderer.blurredTextures[1]);
+		}
+		else 
+			renderer.quad.Draw(renderer.shaders[2], renderer.blurredTextures[0]);
+
+
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::Begin("Options Window");
+		ImGui::Text("You can change parameters in real time using this panel");
+		ImGui::Text("Press left alt to interract");
+
+
+
+
+		ImGui::BeginTabBar("#tabs");
+		if (ImGui::BeginTabItem("Light Casters"))
+		{
+			ImGui::ListBox("", &LightParams::selectedLight, items, IM_ARRAYSIZE(items));
+			switch (LightParams::selectedLight)
+			{
+			case 0:
+				ImGui::ColorEdit3("Color", (float*)&LightParams::dirLightCol);
+				ImGui::InputFloat3("Light Direction", (float*)&LightParams::dirLightDir);
+				break;
+			case 1:
+				ImGui::ColorEdit3("Color", (float*)& LightParams::pointLightCol);
+				ImGui::SliderFloat("Intensity", &LightParams::pLightIntensity, 0.1f, 15.f);
+				break;
+			case 3:
+				ImGui::SliderAngle("Angle", &LightParams::innerAngleRadians);
+				break;
+			}
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Light Maps"))
+		{
+			ImGui::Checkbox("Use normal map", &LightParams::useNormalMap);
+			ImGui::Checkbox("Use displaycement map", &LightParams::useDispMap);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Post Processing"))
+		{
+			ImGui::Checkbox("Enable Blur", &LightParams::toggleBlur);
+			ImGui::Checkbox("Enable Bloom", &LightParams::toggleBloom);
+			ImGui::Checkbox("Enable Depth of Field", &LightParams::toggleDepthOfField);
+
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
+
+
+		
+
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	glfwTerminate();
 	return 0;
@@ -165,21 +272,25 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-	{
-		if (useNormalMap == 1) useNormalMap = 0;
-		else useNormalMap = 1;
+}
 
-	}
-	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+// glfw: whenever the key is pressed only this callback function executes
+// ---------------------------------------------------------------------------------------------
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_LEFT_ALT && action == GLFW_PRESS)
 	{
-		if (useDispMap == 1) useDispMap = 0;
-		else useDispMap = 1;
-	}
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-	{
-		if (toggleBlur == 1) toggleBlur = 0;
-		else toggleBlur = 1;
+		if (toggleInterract == 1)
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			toggleInterract = 0;
+		}
+			
+		else
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			toggleInterract = 1;
+		}
 	}
 }
 
@@ -194,20 +305,31 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
+	if (!toggleInterract)
 	{
+
+		if (firstMouse)
+		{
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
 		lastX = xpos;
 		lastY = ypos;
-		firstMouse = false;
+
+		camera.ProcessMouseMovement(xoffset, yoffset);
 	}
-
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-	lastX = xpos;
-	lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
+	else
+	{
+		//Update mouse coordinates to not offset camera pos when returning input
+		lastX = xpos;
+		lastY = ypos;
+	}
+	
 }
 
 

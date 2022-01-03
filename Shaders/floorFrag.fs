@@ -15,6 +15,7 @@ struct pointLight
     float Kc;
     float Kl;
     float Ke;
+    float intensity;
 };
 
 struct spotLight
@@ -49,14 +50,15 @@ uniform vec3 viewPos;
 uniform pointLight pLight;
 uniform spotLight sLight;
 uniform directLight dLight;
+uniform int selectedLight;
 uniform material mat;
 
 uniform bool toggleNormalMap;
 uniform bool toggleDispMap;
 
 float ambientFactor = 0.1;
-float shine = 64;
-float specularStrength = 0.6;
+float shine = 32;
+float specularStrength = 0.7;
 
 
 
@@ -76,9 +78,9 @@ vec3 SpotLight(vec3 norm, vec3 viewDir)
 
 
     //Specular
-    vec3 halfWay = normalize(-sLightDir + viewDir);
-    float specFactor = pow(max(dot(normal,halfWay),0.0),shine);
-    vec3 specluarColor = sLight.color * specFactor *  specularStrength * attn;
+    vec3 halfWay = normalize(sLightDir + viewDir);
+    float specFactor = pow(max(dot(norm,halfWay),0.0),shine);
+    vec3 specluarColor = sLight.color * specFactor  *0.3 * attn;
 
 
     float theta = dot(-sLightDir, normalize(sLight.direction));
@@ -113,11 +115,11 @@ vec3 PointLight(vec3 norm, vec3 viewDir)
     diffuseColor = diffuseColor*attn;
 
     //Specular
-    vec3 halfWay = normalize(-pLightDir + viewDir);
-    float specFactor = pow(max(dot(normal,halfWay),0.0),shine);
+    vec3 halfWay = normalize(pLightDir + viewDir);
+    float specFactor = pow(max(dot(norm,halfWay),0.0),shine);
     vec3 specluarColor = pLight.color * specFactor *  specularStrength  * attn;
 
-    vec3 result = ambientColor + diffuseColor + specluarColor;
+    vec3 result = (ambientColor + diffuseColor + specluarColor) * pLight.intensity;
     return result;
 }
 
@@ -135,7 +137,7 @@ vec3 diffuseColor = dLight.lightCol * diffMapColor  * diffuseFactor;
 
 //Specular
 vec3 halfWay = normalize(-dLight.lightDir + viewDir);
-float specFactor = pow(max(dot(normal,halfWay),0.0),shine);
+float specFactor = pow(max(dot(norm,halfWay),0.0),shine);
 vec3 specluarColor = dLight.lightCol * specFactor *  specularStrength * texture(mat.specularTexture,texCoords).x;
 
 vec3 result = ambientColor + diffuseColor + specluarColor;
@@ -191,10 +193,19 @@ void main()
 
 
 
-
-
-    //vec3 result =  SpotLight(norm,viewDir) + PointLight(norm,viewDir) ;
-    vec3 result =  DirectionalLight(norm,viewDir,texCoords) ;
+ vec3 result;
+    if(selectedLight == 0)
+    {
+        result =  DirectionalLight(norm,viewDir,texCoords);
+    }
+    else if(selectedLight == 1)
+    {
+        result =  PointLight(norm,viewDir);
+    }
+    else if(selectedLight == 2)
+    {
+        result =  SpotLight(norm,viewDir);
+    }
 
 
     FragColor = vec4(result, 1.0f);

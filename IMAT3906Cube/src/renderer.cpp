@@ -1,6 +1,7 @@
 #include "..\include\renderer.h"
 
 
+
 Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 {
 	screenHeight = sHeight;
@@ -70,6 +71,7 @@ void Renderer::loadShaders()
 	Shader depthShader("..\\shaders\\postprocessing.vs", "..\\shaders\\renderDepth.fs");
 	Shader blurShader("..\\shaders\\postprocessing.vs", "..\\shaders\\blur.fs");
 	Shader depthOfFieldShader("..\\shaders\\postprocessing.vs", "..\\shaders\\depthOfField.fs");
+	Shader bloomShader("..\\shaders\\postprocessing.vs", "..\\shaders\\bloom.fs");
 
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
@@ -77,6 +79,7 @@ void Renderer::loadShaders()
 	shaders.push_back(depthShader);
 	shaders.push_back(blurShader);
 	shaders.push_back(depthOfFieldShader);
+	shaders.push_back(bloomShader);
 }
 
 void Renderer::loadTextures()
@@ -119,23 +122,21 @@ void Renderer::setUniforms(Shader& shader, Camera camera)
 	shader.use();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
 
-	glm::vec3 lightDirection = glm::vec3(0, -1, 0);
-	glm::vec3 lightColor = glm::vec3(1.0, 1.0, 1.0);
 
+	shader.setVec3("dLight.lightCol", LightParams::dirLightCol);
+	shader.setVec3("dLight.lightDir", glm::normalize(LightParams::dirLightDir));
 
-	shader.setVec3("dLight.lightCol", lightColor);
-	shader.setVec3("dLight.lightDir", lightDirection);
-
-
+	shader.setInt("selectedLight", LightParams::selectedLight);
 
 	glm::vec3 pointLightPos = glm::vec3(0, 0, 0);
-	glm::vec3 pointLightColor = glm::vec3(2, 0, 2);
 
 	shader.setVec3("pLight.position", pointLightPos);
-	shader.setVec3("pLight.color", pointLightColor);
+	shader.setVec3("pLight.color", LightParams::pointLightCol);
+	shader.setFloat("pLight.intensity", LightParams::pLightIntensity);
+	
 	shader.setFloat("pLight.Kc", 1);
-	shader.setFloat("pLight.Kl", 0.35f);
-	shader.setFloat("pLight.Ke", 0.044f);
+	shader.setFloat("pLight.Kl", 0.22f);
+	shader.setFloat("pLight.Ke", 0.020f);
 
 
 	glm::vec3 spotLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -144,8 +145,8 @@ void Renderer::setUniforms(Shader& shader, Camera camera)
 	shader.setVec3("sLight.direction", camera.Front);
 	shader.setVec3("sLight.color", spotLightColor);
 	shader.setFloat("sLight.Kc", 1);
-	shader.setFloat("sLight.Kl;", 0.027f);
-	shader.setFloat("sLight.Ke", 0.0028f);
+	shader.setFloat("sLight.Kl;", 0.07f);
+	shader.setFloat("sLight.Ke", 0.0017f);
 	shader.setFloat("sLight.innerRad", glm::cos(glm::radians(12.5f)));
 	shader.setFloat("sLight.outerRad", glm::cos(glm::radians(17.5f)));
 }
@@ -188,13 +189,21 @@ void Renderer::setFBOColour()
 
 	glGenFramebuffers(1, &FBOBlur);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOBlur);
-	glGenTextures(1, &blurredTexture);
-	glBindTexture(GL_TEXTURE_2D, blurredTexture);
+	glGenTextures(2, blurredTextures);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredTexture, 0);
+	for (int i = 0; i < 3; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, blurredTextures[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, blurredTextures[i], 0);
+	}
+
+
+	glDrawBuffers(2, attachments);
 
 
 
@@ -209,6 +218,21 @@ void Renderer::setFBODepth()
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::updatePointLightUniforms()
+{
+}
+
+void Renderer::updateSpotLightUniforms()
+{
+	shaders[0].use();
+	shaders[0].setVec3("sLight.position", camera->Position);
+	shaders[0].setVec3("sLight.direction", camera->Front);
+
+	shaders[1].use();
+	shaders[1].setVec3("sLight.position", camera->Position);
+	shaders[1].setVec3("sLight.direction", camera->Front);
 }
 
 unsigned int Renderer::loadTexture(char const* path)
