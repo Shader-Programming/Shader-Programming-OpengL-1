@@ -2,12 +2,16 @@
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 brightColor;
+layout (location = 2) out vec4 doFColor;
+
 uniform bool horizontal;
 
 in vec2 uv;
 uniform sampler2D image;
 uniform sampler2D image2;
+uniform sampler2D depthMap;
 uniform bool blurToggle;
+uniform bool depthOfFieldToggle;
 
 float weights[] = {
 0.045588748213977244, 0.04469312448750337, 0.04323941779418976, 0.041283252881657614, 0.03889759757448154,
@@ -19,10 +23,13 @@ float weights[] = {
 int r = 21;
 float bias = 1f;
 
+
+
 void main()
 {
     vec3 color;
     vec3 color2;
+    vec3 color3;
 
 if(blurToggle)
 {
@@ -57,7 +64,27 @@ else
     color = texture(image,uv).rgb;
     color2 = texture(image2,uv).rgb;
 }
+if(depthOfFieldToggle)
+{
+    vec2 coord = vec2(0.5,0.5);
+
+    vec3 depthCoor = texture(depthMap,uv).rgb;
+    vec3 depthCurrentFragment = texture(depthMap,coord).rgb;
+
+    
+
+    vec3 inFocusFragment = texture(image,uv).rgb;
+    vec3 outFocusFragment = color;
+
+    float depthDistance = distance(depthCoor,depthCurrentFragment);
+    //vec3 depth = mix(depthCoor,color4,depthDistance); 
+
+    inFocusFragment = inFocusFragment * vec3(1,1,1);
+    //color3 = mix(inFocusFragment,outFocusFragment,depthDistance);
+    color3 = depthCurrentFragment;
+}
 FragColor = vec4(color, 1.0);
 brightColor = vec4(color2,1.0);
+doFColor = vec4(color3,1.0);
 }
 

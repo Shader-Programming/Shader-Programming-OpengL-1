@@ -142,19 +142,23 @@ int main()
 		renderer.shaders[2].setInt("image", renderer.colourAttachment[0]);
 
 		renderer.updateSpotLightUniforms();
-
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glActiveTexture(GL_TEXTURE9);
+		glBindTexture(GL_TEXTURE_2D, 9);
 
 		// Blur
 		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBOBlur);
-		glDisable(GL_DEPTH_TEST);
+
 
 
 
 		renderer.shaders[4].use();
 		renderer.shaders[4].setBool("blurToggle", LightParams::toggleBlur);
+		renderer.shaders[4].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
 		renderer.shaders[4].setInt("image", 7);
 		renderer.shaders[4].setInt("image2", 8);
-
+		renderer.shaders[4].setInt("depthMap", 9);
 		renderer.shaders[4].setBool("horizontal",true);
 		renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0], renderer.colourAttachment[1]);
 		renderer.shaders[4].setBool("horizontal", false);
@@ -162,34 +166,48 @@ int main()
 
 
 
-		//Depth of field
-		//renderer.shaders[5].use();
-		//renderer.shaders[5].setBool("depthOfFieldToggle", 1);
-		//renderer.shaders[5].setInt("inFocus", renderer.colourAttachment[0]);
-		//renderer.shaders[5].setInt("outFocus", renderer.blurredTextures[0]);
-		//renderer.shaders[5].setInt("depthMap", renderer.depthAttachment);
-		//renderer.shaders[5].setInt("image", renderer.blurredTextures[0]);
-		//renderer.quad.Draw(renderer.shaders[5], renderer.blurredTextures[1]);
 
 
-		//3rd pass render to screen - quad vao
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		renderer.shaders[2].use();
-		renderer.shaders[2].setInt("image", 7);
+
+
+
 
 		renderer.shaders[6].use();
 		renderer.shaders[6].setInt("image", 7);
 		renderer.shaders[6].setInt("bloomBlur", 8);
 
+		//Depth of field
+		//renderer.shaders[5].use();
+		//renderer.shaders[5].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
+		//renderer.shaders[5].setInt("inFocus", 10);
+		//renderer.shaders[5].setInt("outFocus", 10);
+		//renderer.shaders[5].setInt("depthMap", 9);
 
+
+
+
+
+		//renderer.quad.Draw(renderer.shaders[5], renderer.colourAttachment[0], renderer.blurredTextures[0]);
+			
+
+		//3rd pass render to screen - quad vao
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
+		renderer.shaders[2].use();
+		renderer.shaders[2].setInt("image", 7);
+
 		if (LightParams::toggleBloom)
 		{
 			LightParams::toggleBlur = true;
 			renderer.quad.Draw(renderer.shaders[6], renderer.colourAttachment[0], renderer.blurredTextures[1]);
 		}
 		else 
-			renderer.quad.Draw(renderer.shaders[2], renderer.blurredTextures[0]);
+			renderer.quad.Draw(renderer.shaders[2], renderer.colourAttachment[0]);
+
+
+
+
+
 
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));

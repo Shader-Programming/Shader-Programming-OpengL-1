@@ -159,7 +159,7 @@ void Renderer::setFBOColour()
 
 	glGenTextures(2, colourAttachment);
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 2; i++)
 	{
 	glBindTexture(GL_TEXTURE_2D, colourAttachment[i]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -184,12 +184,12 @@ void Renderer::setFBOColour()
 
 	
 
-	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(2, attachments);
 
 	glGenFramebuffers(1, &FBOBlur);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOBlur);
-	glGenTextures(2, blurredTextures);
+	glGenTextures(3, blurredTextures);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -202,8 +202,8 @@ void Renderer::setFBOColour()
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, blurredTextures[i], 0);
 	}
 
-
-	glDrawBuffers(2, attachments);
+	
+	glDrawBuffers(3, attachments);
 
 
 
