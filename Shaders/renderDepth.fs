@@ -1,8 +1,8 @@
-#version 330 core
-layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 brightColor;
+#version 410 core
+out vec4 FragColor;
+
 float LinearizeDepth(float depth) ;
-in vec2 TexCoords;
+in vec2 uv;
 
 uniform sampler2D depthMap;
 const float near_plane = 1;
@@ -11,8 +11,11 @@ const float far_plane = 1000;
 void main()
 {             
  
-    float depth = texture(depthMap,TexCoords).r ;
-    FragColor = vec4(vec3(LinearizeDepth(depth) / far_plane), 1.0); // perspective
+    float depth = texture(depthMap,uv).r ;
+    
+    FragColor = vec4(vec3(depth), 1.0); // perspective
+
+    //FragColor = vec4(vec3(LinearizeDepth(depth) / far_plane), 1.0); // perspective
     
 }
 

@@ -6,6 +6,7 @@ class LightParams
 {
 public:
 	static int selectedLight;
+	static glm::vec3 lightPos;
 	static glm::vec3 dirLightCol;
 	static glm::vec3 pointLightCol;
 	static glm::vec3 dirLightDir;

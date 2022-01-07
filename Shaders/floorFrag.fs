@@ -60,6 +60,35 @@ float ambientFactor = 0.1;
 float shine = 32;
 float specularStrength = 0.7;
 
+uniform sampler2D depthMap;
+uniform mat4 lightSpaceMatrix;
+
+float calcShadow(vec4 fragPosLightSpace)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    float closestDepth = texture(depthMap,projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float shadow = 0;
+    float bias = 0.015;
+
+    for(int i = -1; i <2; i++)
+    {
+        for (int j = -1; j<2; j++)
+        {
+            float pcf = texture(depthMap, projCoords.xy + vec2(i,j)*1).r;
+                if(currentDepth-bias > closestDepth)
+                    shadow += 1;
+        }
+    }
+
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+
+    return shadow/9;
+}
+
+
 
 
 vec3 SpotLight(vec3 norm, vec3 viewDir)
@@ -123,7 +152,7 @@ vec3 PointLight(vec3 norm, vec3 viewDir)
     return result;
 }
 
-vec3 DirectionalLight(vec3 norm, vec3 viewDir,vec2 texCoords)
+vec3 DirectionalLight(vec3 norm, vec3 viewDir,vec2 texCoords, float shadow)
 {
     vec3 diffMapColor = texture(mat.diffuseTexture, texCoords).xyz;
 
@@ -140,7 +169,7 @@ vec3 halfWay = normalize(-dLight.lightDir + viewDir);
 float specFactor = pow(max(dot(norm,halfWay),0.0),shine);
 vec3 specluarColor = dLight.lightCol * specFactor *  specularStrength * texture(mat.specularTexture,texCoords).x;
 
-vec3 result = ambientColor + diffuseColor + specluarColor;
+vec3 result = ambientColor +(1.0 - shadow) * (diffuseColor + specluarColor);
 return result;
 }
 
@@ -163,7 +192,9 @@ return texCoords - (viewDir.xy) * (height * 0.0175);
 
 void main()
 {    	
-    
+    vec4 posLS = lightSpaceMatrix * vec4(posWS,1.0);
+    float shadow = calcShadow(posLS)* 0.4;
+
     vec3 norm;
 
     vec2 texCoords = uv;
@@ -196,7 +227,7 @@ void main()
  vec3 result;
     if(selectedLight == 0)
     {
-        result =  DirectionalLight(norm,viewDir,texCoords);
+        result =  DirectionalLight(norm,viewDir,texCoords,shadow);
     }
     else if(selectedLight == 1)
     {
@@ -211,7 +242,7 @@ void main()
     FragColor = vec4(result, 1.0f);
     //float brightness = (result.x + result.y + result.z) /3;
     float brightness = max(max(result.r,result.g),result.b);
-    if(brightness > 0.7)
+    if(brightness > 0.85)
         brightColor = FragColor;
     else
         brightColor = vec4(vec3(0.0),1.0);

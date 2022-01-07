@@ -24,10 +24,17 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	cube1.assignSpecularMap(2);
 
 	quad = Quad(shaders[2]);
+
+	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -10.f, 20.f);
+	lightView = glm::lookAt(LightParams::lightPos, glm::vec3(0), glm::vec3(0.0, 1.0, 0.0));
+	lightSpaceMatrix = lightProjection * lightView;
 }
 
 void Renderer::RenderScene( Camera camera)
 {
+
+
+
 
 	shaders[0].use();
 	// MVP 
@@ -40,18 +47,46 @@ void Renderer::RenderScene( Camera camera)
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::mat4(1.0f);
 	shaders[0].setMat4("model", model);
+	shaders[0].setInt("depthMap", 10);
+	shaders[0].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 	shaders[1].use();
 	shaders[1].setMat4("projection", projection);
 	shaders[1].setMat4("view", view);
 	shaders[1].setVec3("viewPos", camera.Position);
 	shaders[1].setMat4("model", model);
+	shaders[1].setInt("depthMap", 10);
+	shaders[1].setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+	glActiveTexture(GL_TEXTURE10);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+
+	glActiveTexture(GL_TEXTURE7);
 
 	plane1.assignShader(shaders[1]);
 	cube1.assignShader(shaders[0]);
 
 	plane1.Render();
 	cube1.Render();
+}
+
+void Renderer::RenderShadowMap()
+{
+	float near_plane, far_plane;
+
+	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -10.f, 20.f);
+	lightView = glm::lookAt(LightParams::lightPos, glm::vec3(0), glm::vec3(0.0, 1.0, 0.0));
+	lightSpaceMatrix = lightProjection * lightView;
+
+	// MVP 
+
+	plane1.assignShader(shaders[7]);
+	cube1.assignShader(shaders[7]);
+
+	plane1.Render();
+	cube1.Render();
+
+
 }
 
 void Renderer::assignCamera(Camera& cam)
@@ -72,6 +107,7 @@ void Renderer::loadShaders()
 	Shader blurShader("..\\shaders\\postprocessing.vs", "..\\shaders\\blur.fs");
 	Shader depthOfFieldShader("..\\shaders\\postprocessing.vs", "..\\shaders\\depthOfField.fs");
 	Shader bloomShader("..\\shaders\\postprocessing.vs", "..\\shaders\\bloom.fs");
+	Shader shadowMapShader("..\\shaders\\shadowPass.vs", "..\\shaders\\shadowPass.fs");
 
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
@@ -80,6 +116,7 @@ void Renderer::loadShaders()
 	shaders.push_back(blurShader);
 	shaders.push_back(depthOfFieldShader);
 	shaders.push_back(bloomShader);
+	shaders.push_back(shadowMapShader);
 }
 
 void Renderer::loadTextures()
@@ -153,7 +190,7 @@ void Renderer::setUniforms(Shader& shader, Camera camera)
 
 void Renderer::setFBOColour()
 {
-	glGenFramebuffers(1, &FBO);
+	/*glGenFramebuffers(1, &FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 
@@ -203,8 +240,25 @@ void Renderer::setFBOColour()
 	}
 
 	
-	glDrawBuffers(3, attachments);
+	glDrawBuffers(3, attachments);*/
 
+
+	const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
+
+	glGenFramebuffers(1, &FBODepthMap);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBODepthMap);
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

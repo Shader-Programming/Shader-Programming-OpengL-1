@@ -21,16 +21,18 @@ class Renderer {
 public:
 	Renderer(const unsigned int sWidth, const unsigned int sHeight);
 	void RenderScene( Camera camera);
+	void RenderShadowMap();
 	std::vector<Shader> shaders;
 	void assignCamera(Camera& cam);
-	unsigned int FBO,FBODepth,FBOBlur, FBODepthOfField;
+	unsigned int FBO,FBODepth,FBOBlur, FBODepthMap;
 	void setFBOColour();
 	void setFBODepth();
 	Quad quad;
-	unsigned int colourAttachment[2], depthAttachment,blurredTextures[3],dofTexture;
+	unsigned int colourAttachment[2], depthAttachment,blurredTextures[3],depthMap;
 	void updatePointLightUniforms();
 	void updateSpotLightUniforms();
 	void setUniforms(Shader& shader, Camera camera);
+	glm::mat4 lightSpaceMatrix;
 private:
 	void loadShaders();
 	void loadTextures();
@@ -45,6 +47,9 @@ private:
 	Camera* camera;
 	glm::vec3 cubeColor = glm::vec3(1.0, 0.4, 0.4);
 	glm::vec3 floorColor = glm::vec3(0.1, 0.3, 0.3);
+	
+	glm::mat4 lightProjection;
+	glm::mat4 lightView;
 
 	unsigned int screenWidth, screenHeight;
 	

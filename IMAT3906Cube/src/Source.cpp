@@ -114,153 +114,161 @@ int main()
 
 		processInput(window);
 
-
-		// 1st pass to FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
-
-
-		//UI stuff
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-
+		//First pass to fill shadow map
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBODepthMap);
+		glViewport(0,0, 4096, 4096);
 		glEnable(GL_DEPTH_TEST);
-		
-		renderer.RenderScene(camera);
-		renderer.shaders[0].use();
-		renderer.shaders[0].setBool("toggleNormalMap", LightParams::useNormalMap);
-		renderer.setUniforms(renderer.shaders[0],camera);
-		renderer.setUniforms(renderer.shaders[1],camera);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		renderer.shaders[1].use();
-		renderer.shaders[1].setBool("toggleDispMap", LightParams::useDispMap);
-		renderer.shaders[1].setBool("toggleNormalMap", LightParams::useNormalMap);
+		renderer.shaders[7].use();
+		renderer.shaders[7].setMat4("lightSpaceMatrix", renderer.lightSpaceMatrix);
+		renderer.RenderShadowMap();
 
-		renderer.shaders[2].use();
-		renderer.shaders[2].setInt("image", renderer.colourAttachment[0]);
-
-		renderer.updateSpotLightUniforms();
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glActiveTexture(GL_TEXTURE9);
-		glBindTexture(GL_TEXTURE_2D, 9);
-
-		// Blur
-		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBOBlur);
-
-
-
-
-		renderer.shaders[4].use();
-		renderer.shaders[4].setBool("blurToggle", LightParams::toggleBlur);
-		renderer.shaders[4].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
-		renderer.shaders[4].setInt("image", 7);
-		renderer.shaders[4].setInt("image2", 8);
-		renderer.shaders[4].setInt("depthMap", 9);
-		renderer.shaders[4].setBool("horizontal",true);
-		renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0], renderer.colourAttachment[1]);
-		renderer.shaders[4].setBool("horizontal", false);
-		renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0], renderer.colourAttachment[1]);
-
-
-
-
-
-
-
-
-
-		renderer.shaders[6].use();
-		renderer.shaders[6].setInt("image", 7);
-		renderer.shaders[6].setInt("bloomBlur", 8);
-
-		//Depth of field
-		//renderer.shaders[5].use();
-		//renderer.shaders[5].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
-		//renderer.shaders[5].setInt("inFocus", 10);
-		//renderer.shaders[5].setInt("outFocus", 10);
-		//renderer.shaders[5].setInt("depthMap", 9);
-
-
-
-
-
-		//renderer.quad.Draw(renderer.shaders[5], renderer.colourAttachment[0], renderer.blurredTextures[0]);
-			
-
-		//3rd pass render to screen - quad vao
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
-		renderer.shaders[2].use();
-		renderer.shaders[2].setInt("image", 7);
+		//glDisable(GL_DEPTH_TEST);
 
-		if (LightParams::toggleBloom)
-		{
-			LightParams::toggleBlur = true;
-			renderer.quad.Draw(renderer.shaders[6], renderer.colourAttachment[0], renderer.blurredTextures[1]);
-		}
-		else 
-			renderer.quad.Draw(renderer.shaders[2], renderer.colourAttachment[0]);
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderer.RenderScene(camera);
 
 
 
+		//// 1st pass to FBO
+		//glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
+
+
+		////UI stuff
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//ImGui_ImplOpenGL3_NewFrame();
+		//ImGui_ImplGlfw_NewFrame();
+		//ImGui::NewFrame();
+
+
+		//glEnable(GL_DEPTH_TEST);
+		//
+		//renderer.RenderScene(camera);
+		//renderer.shaders[0].use();
+		//renderer.shaders[0].setBool("toggleNormalMap", LightParams::useNormalMap);
+		//renderer.setUniforms(renderer.shaders[0],camera);
+		//renderer.setUniforms(renderer.shaders[1],camera);
+
+		//renderer.shaders[1].use();
+		//renderer.shaders[1].setBool("toggleDispMap", LightParams::useDispMap);
+		//renderer.shaders[1].setBool("toggleNormalMap", LightParams::useNormalMap);
+
+		//renderer.shaders[2].use();
+		//renderer.shaders[2].setInt("image", renderer.colourAttachment[0]);
+
+		//renderer.updateSpotLightUniforms();
+		//glDisable(GL_DEPTH_TEST);
+		//glEnable(GL_BLEND);
+		//glActiveTexture(GL_TEXTURE9);
+		//glBindTexture(GL_TEXTURE_2D, 9);
+
+		//// Blur
+		//glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBOBlur);
 
 
 
 
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::Begin("Options Window");
-		ImGui::Text("You can change parameters in real time using this panel");
-		ImGui::Text("Press left alt to interract");
+		//renderer.shaders[4].use();
+		//renderer.shaders[4].setBool("blurToggle", LightParams::toggleBlur);
+		//renderer.shaders[4].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
+		//renderer.shaders[4].setInt("image", 7);
+		//renderer.shaders[4].setInt("image2", 8);
+		//renderer.shaders[4].setInt("depthMap", 9);
+		//renderer.shaders[4].setBool("horizontal",true);
+		//renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0], renderer.colourAttachment[1]);
+		//renderer.shaders[4].setBool("horizontal", false);
+		//renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0], renderer.colourAttachment[1]);
 
 
 
 
-		ImGui::BeginTabBar("#tabs");
-		if (ImGui::BeginTabItem("Light Casters"))
-		{
-			ImGui::ListBox("", &LightParams::selectedLight, items, IM_ARRAYSIZE(items));
-			switch (LightParams::selectedLight)
-			{
-			case 0:
-				ImGui::ColorEdit3("Color", (float*)&LightParams::dirLightCol);
-				ImGui::InputFloat3("Light Direction", (float*)&LightParams::dirLightDir);
-				break;
-			case 1:
-				ImGui::ColorEdit3("Color", (float*)& LightParams::pointLightCol);
-				ImGui::SliderFloat("Intensity", &LightParams::pLightIntensity, 0.1f, 15.f);
-				break;
-			case 3:
-				ImGui::SliderAngle("Angle", &LightParams::innerAngleRadians);
-				break;
-			}
-			ImGui::EndTabItem();
-		}
-		if (ImGui::BeginTabItem("Light Maps"))
-		{
-			ImGui::Checkbox("Use normal map", &LightParams::useNormalMap);
-			ImGui::Checkbox("Use displaycement map", &LightParams::useDispMap);
-			ImGui::EndTabItem();
-		}
-		if (ImGui::BeginTabItem("Post Processing"))
-		{
-			ImGui::Checkbox("Enable Blur", &LightParams::toggleBlur);
-			ImGui::Checkbox("Enable Bloom", &LightParams::toggleBloom);
-			ImGui::Checkbox("Enable Depth of Field", &LightParams::toggleDepthOfField);
-
-			ImGui::EndTabItem();
-		}
-		ImGui::EndTabBar();
 
 
-		
 
-		ImGui::End();
 
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		//renderer.shaders[6].use();
+		//renderer.shaders[6].setInt("image", 7);
+		//renderer.shaders[6].setInt("bloomBlur", 8);
+
+
+		////renderer.quad.Draw(renderer.shaders[5], renderer.colourAttachment[0], renderer.blurredTextures[0]);
+		//	
+
+		////3rd pass render to screen - quad vao
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//
+		//renderer.shaders[2].use();
+		//renderer.shaders[2].setInt("image", 7);
+
+		//if (LightParams::toggleBloom)
+		//{
+		//	LightParams::toggleBlur = true;
+		//	renderer.quad.Draw(renderer.shaders[6], renderer.colourAttachment[0], renderer.blurredTextures[1]);
+		//}
+		//else 
+		//	renderer.quad.Draw(renderer.shaders[2], renderer.blurredTextures[0]);
+
+
+
+
+
+
+
+		//ImGui::SetNextWindowPos(ImVec2(0, 0));
+		//ImGui::Begin("Options Window");
+		//ImGui::Text("You can change parameters in real time using this panel");
+		//ImGui::Text("Press left alt to interract");
+
+
+
+
+		//ImGui::BeginTabBar("#tabs");
+		//if (ImGui::BeginTabItem("Light Casters"))
+		//{
+		//	ImGui::ListBox("", &LightParams::selectedLight, items, IM_ARRAYSIZE(items));
+		//	switch (LightParams::selectedLight)
+		//	{
+		//	case 0:
+		//		ImGui::ColorEdit3("Color", (float*)&LightParams::dirLightCol);
+		//		ImGui::InputFloat3("Light Direction", (float*)&LightParams::dirLightDir);
+		//		break;
+		//	case 1:
+		//		ImGui::ColorEdit3("Color", (float*)& LightParams::pointLightCol);
+		//		ImGui::SliderFloat("Intensity", &LightParams::pLightIntensity, 0.1f, 15.f);
+		//		break;
+		//	case 3:
+		//		ImGui::SliderAngle("Angle", &LightParams::innerAngleRadians);
+		//		break;
+		//	}
+		//	ImGui::EndTabItem();
+		//}
+		//if (ImGui::BeginTabItem("Light Maps"))
+		//{
+		//	ImGui::Checkbox("Use normal map", &LightParams::useNormalMap);
+		//	ImGui::Checkbox("Use displaycement map", &LightParams::useDispMap);
+		//	ImGui::EndTabItem();
+		//}
+		//if (ImGui::BeginTabItem("Post Processing"))
+		//{
+		//	ImGui::Checkbox("Enable Blur", &LightParams::toggleBlur);
+		//	ImGui::Checkbox("Enable Bloom", &LightParams::toggleBloom);
+		//	ImGui::Checkbox("Enable Depth of Field", &LightParams::toggleDepthOfField);
+
+		//	ImGui::EndTabItem();
+		//}
+		//ImGui::EndTabBar();
+
+
+		//
+
+		//ImGui::End();
+
+		//ImGui::Render();
+		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	
 		glfwSwapBuffers(window);
