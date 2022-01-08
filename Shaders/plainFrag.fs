@@ -64,6 +64,7 @@ float specularStrength = 0.7;
 uniform sampler2D depthMap;
 uniform mat4 lightSpaceMatrix;
 
+
 float calcShadow(vec4 fragPosLightSpace)
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;

@@ -17,4 +17,5 @@ public:
 	static bool toggleBlur;
 	static bool toggleBloom;
 	static bool toggleDepthOfField;
+	static bool toggleShadowMapping;
 };

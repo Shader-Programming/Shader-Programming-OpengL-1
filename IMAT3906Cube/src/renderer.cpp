@@ -28,6 +28,7 @@ Renderer::Renderer(const unsigned int sWidth, const unsigned int sHeight)
 	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -10.f, 20.f);
 	lightView = glm::lookAt(LightParams::lightPos, glm::vec3(0), glm::vec3(0.0, 1.0, 0.0));
 	lightSpaceMatrix = lightProjection * lightView;
+	skybox.createSkyBox();
 }
 
 void Renderer::RenderScene( Camera camera)
@@ -58,6 +59,10 @@ void Renderer::RenderScene( Camera camera)
 	shaders[1].setInt("depthMap", 10);
 	shaders[1].setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
+	shaders[8].use();
+	shaders[8].setMat4("projection", projection);
+	shaders[8].setMat4("view", glm::mat4(glm::mat3(camera.GetViewMatrix())));
+
 	glActiveTexture(GL_TEXTURE10);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 
@@ -66,12 +71,17 @@ void Renderer::RenderScene( Camera camera)
 	plane1.assignShader(shaders[1]);
 	cube1.assignShader(shaders[0]);
 
+	skybox.renderSkyBox(shaders[8]);
 	plane1.Render();
 	cube1.Render();
 }
 
 void Renderer::RenderShadowMap()
 {
+	if(LightParams::dirLightDir == glm::vec3(0,-1,0))
+		LightParams::dirLightDir = glm::vec3(0.0001,-1,0);
+
+	LightParams::lightPos = LightParams::dirLightDir * glm::vec3(-0.7);
 	float near_plane, far_plane;
 
 	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -10.f, 20.f);
@@ -108,6 +118,7 @@ void Renderer::loadShaders()
 	Shader depthOfFieldShader("..\\shaders\\postprocessing.vs", "..\\shaders\\depthOfField.fs");
 	Shader bloomShader("..\\shaders\\postprocessing.vs", "..\\shaders\\bloom.fs");
 	Shader shadowMapShader("..\\shaders\\shadowPass.vs", "..\\shaders\\shadowPass.fs");
+	Shader skyBoxShader("..\\shaders\\skyBox.vs", "..\\shaders\\skyBox.fs");
 
 	shaders.push_back(cubeShader);
 	shaders.push_back(floorShader);
@@ -117,6 +128,7 @@ void Renderer::loadShaders()
 	shaders.push_back(depthOfFieldShader);
 	shaders.push_back(bloomShader);
 	shaders.push_back(shadowMapShader);
+	shaders.push_back(skyBoxShader);
 }
 
 void Renderer::loadTextures()
@@ -188,9 +200,9 @@ void Renderer::setUniforms(Shader& shader, Camera camera)
 	shader.setFloat("sLight.outerRad", glm::cos(glm::radians(17.5f)));
 }
 
-void Renderer::setFBOColour()
+void Renderer::PrepareFrameBuffers()
 {
-	/*glGenFramebuffers(1, &FBO);
+	glGenFramebuffers(1, &FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 
@@ -240,7 +252,7 @@ void Renderer::setFBOColour()
 	}
 
 	
-	glDrawBuffers(3, attachments);*/
+	glDrawBuffers(3, attachments);
 
 
 	const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;

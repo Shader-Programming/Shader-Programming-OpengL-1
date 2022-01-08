@@ -58,7 +58,7 @@ uniform bool toggleDispMap;
 
 float ambientFactor = 0.1;
 float shine = 32;
-float specularStrength = 0.7;
+float specularStrength = 0.35;
 
 uniform sampler2D depthMap;
 uniform mat4 lightSpaceMatrix;
@@ -167,7 +167,7 @@ vec3 diffuseColor = dLight.lightCol * diffMapColor  * diffuseFactor;
 //Specular
 vec3 halfWay = normalize(-dLight.lightDir + viewDir);
 float specFactor = pow(max(dot(norm,halfWay),0.0),shine);
-vec3 specluarColor = dLight.lightCol * specFactor *  specularStrength * texture(mat.specularTexture,texCoords).x;
+vec3 specluarColor = dLight.lightCol * specFactor *  specularStrength;
 
 vec3 result = ambientColor +(1.0 - shadow) * (diffuseColor + specluarColor);
 return result;

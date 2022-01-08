@@ -16,6 +16,7 @@
 #include "plane.h"
 #include "Quad.h"
 #include "LightParams.h"
+#include "skybox.h"
 
 class Renderer {
 public:
@@ -25,7 +26,7 @@ public:
 	std::vector<Shader> shaders;
 	void assignCamera(Camera& cam);
 	unsigned int FBO,FBODepth,FBOBlur, FBODepthMap;
-	void setFBOColour();
+	void PrepareFrameBuffers();
 	void setFBODepth();
 	Quad quad;
 	unsigned int colourAttachment[2], depthAttachment,blurredTextures[3],depthMap;
@@ -36,8 +37,7 @@ public:
 private:
 	void loadShaders();
 	void loadTextures();
-	
-	
+	SkyBox skybox;
 
 	unsigned int loadTexture(char const* path);
 

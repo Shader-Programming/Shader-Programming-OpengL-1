@@ -11,14 +11,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include<string>
+#include <iostream>
+#include <numeric>
+
 #include "Shader.h"
 #include "Camera.h"
 #include "renderer.h"
 #include "LightParams.h"
-
-#include<string>
-#include <iostream>
-#include <numeric>
 
 
 
@@ -43,28 +43,27 @@ bool firstMouse = true;
 
 
 
-
-
-
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 
-
-//Parameters
+//Enable easier interaction with UI
 bool toggleInterract = 0;
 
 
 
 int main()
 {
-	
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// multisample anti-aliasing
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "IMAT3907", NULL, NULL);
 	if (window == NULL)
 	{
@@ -85,27 +84,23 @@ int main()
 		return -1;
 	}
 
+	glEnable(GL_MULTISAMPLE);
 
-
-	//Renderer
+	//Initialise Renderer
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+	renderer.assignCamera(camera);
+	renderer.PrepareFrameBuffers();
 
-	renderer.shaders[2].use();
-	renderer.setFBOColour();
-
+	//Initialise UI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
-	
-
 	static const char* items[]{ "Directional Light","Point Light","Spot Light" };
 
 
-
-	renderer.assignCamera(camera);
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -114,73 +109,68 @@ int main()
 
 		processInput(window);
 
-		//First pass to fill shadow map
-		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBODepthMap);
-		glViewport(0,0, 4096, 4096);
+		//UI frame timings
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		glEnable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		renderer.shaders[7].use();
-		renderer.shaders[7].setMat4("lightSpaceMatrix", renderer.lightSpaceMatrix);
-		renderer.RenderShadowMap();
+		//First pass to fill shadow map
+		if (LightParams::toggleShadowMapping)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBODepthMap);
+			glViewport(0, 0, 4096, 4096);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glDisable(GL_DEPTH_TEST);
+			renderer.shaders[7].use();
+			renderer.shaders[7].setMat4("lightSpaceMatrix", renderer.lightSpaceMatrix);
+			renderer.RenderShadowMap();
+		}
 
+
+
+		//Second pass to FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.RenderScene(camera);
 
 
+		renderer.shaders[0].use();
+		renderer.shaders[0].setBool("toggleNormalMap", LightParams::useNormalMap);
+		renderer.setUniforms(renderer.shaders[0],camera);
+		renderer.setUniforms(renderer.shaders[1],camera);
 
-		//// 1st pass to FBO
-		//glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBO);
+		renderer.shaders[1].use();
+		renderer.shaders[1].setBool("toggleDispMap", LightParams::useDispMap);
+		renderer.shaders[1].setBool("toggleNormalMap", LightParams::useNormalMap);
 
+		renderer.shaders[2].use();
+		renderer.shaders[2].setInt("image", renderer.colourAttachment[0]);
 
-		////UI stuff
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
-		//ImGui::NewFrame();
+		renderer.updateSpotLightUniforms();
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glActiveTexture(GL_TEXTURE9);
+		glBindTexture(GL_TEXTURE_2D, 9);
 
-
-		//glEnable(GL_DEPTH_TEST);
-		//
-		//renderer.RenderScene(camera);
-		//renderer.shaders[0].use();
-		//renderer.shaders[0].setBool("toggleNormalMap", LightParams::useNormalMap);
-		//renderer.setUniforms(renderer.shaders[0],camera);
-		//renderer.setUniforms(renderer.shaders[1],camera);
-
-		//renderer.shaders[1].use();
-		//renderer.shaders[1].setBool("toggleDispMap", LightParams::useDispMap);
-		//renderer.shaders[1].setBool("toggleNormalMap", LightParams::useNormalMap);
-
-		//renderer.shaders[2].use();
-		//renderer.shaders[2].setInt("image", renderer.colourAttachment[0]);
-
-		//renderer.updateSpotLightUniforms();
-		//glDisable(GL_DEPTH_TEST);
-		//glEnable(GL_BLEND);
-		//glActiveTexture(GL_TEXTURE9);
-		//glBindTexture(GL_TEXTURE_2D, 9);
-
-		//// Blur
-		//glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBOBlur);
+		// Blur
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer.FBOBlur);
 
 
 
 
-		//renderer.shaders[4].use();
-		//renderer.shaders[4].setBool("blurToggle", LightParams::toggleBlur);
-		//renderer.shaders[4].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
-		//renderer.shaders[4].setInt("image", 7);
-		//renderer.shaders[4].setInt("image2", 8);
-		//renderer.shaders[4].setInt("depthMap", 9);
-		//renderer.shaders[4].setBool("horizontal",true);
-		//renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0], renderer.colourAttachment[1]);
-		//renderer.shaders[4].setBool("horizontal", false);
-		//renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0], renderer.colourAttachment[1]);
+		renderer.shaders[4].use();
+		renderer.shaders[4].setBool("blurToggle", LightParams::toggleBlur);
+		renderer.shaders[4].setBool("depthOfFieldToggle", LightParams::toggleDepthOfField);
+		renderer.shaders[4].setInt("image", 7);
+		renderer.shaders[4].setInt("image2", 8);
+		renderer.shaders[4].setInt("depthMap", 9);
+		renderer.shaders[4].setBool("horizontal",true);
+		renderer.quad.Draw(renderer.shaders[4],renderer.colourAttachment[0], renderer.colourAttachment[1]);
+		renderer.shaders[4].setBool("horizontal", false);
+		renderer.quad.Draw(renderer.shaders[4], renderer.colourAttachment[0], renderer.colourAttachment[1]);
 
 
 
@@ -190,85 +180,85 @@ int main()
 
 
 
-		//renderer.shaders[6].use();
-		//renderer.shaders[6].setInt("image", 7);
-		//renderer.shaders[6].setInt("bloomBlur", 8);
+		renderer.shaders[6].use();
+		renderer.shaders[6].setInt("image", 7);
+		renderer.shaders[6].setInt("bloomBlur", 8);
 
 
-		////renderer.quad.Draw(renderer.shaders[5], renderer.colourAttachment[0], renderer.blurredTextures[0]);
-		//	
+		//renderer.quad.Draw(renderer.shaders[5], renderer.colourAttachment[0], renderer.blurredTextures[0]);
+			
 
-		////3rd pass render to screen - quad vao
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//
-		//renderer.shaders[2].use();
-		//renderer.shaders[2].setInt("image", 7);
+		//3rd pass render to screen - quad vao
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+		renderer.shaders[2].use();
+		renderer.shaders[2].setInt("image", 7);
 
-		//if (LightParams::toggleBloom)
-		//{
-		//	LightParams::toggleBlur = true;
-		//	renderer.quad.Draw(renderer.shaders[6], renderer.colourAttachment[0], renderer.blurredTextures[1]);
-		//}
-		//else 
-		//	renderer.quad.Draw(renderer.shaders[2], renderer.blurredTextures[0]);
-
-
-
+		if (LightParams::toggleBloom)
+		{
+			LightParams::toggleBlur = true;
+			renderer.quad.Draw(renderer.shaders[6], renderer.colourAttachment[0], renderer.blurredTextures[1]);
+		}
+		else 
+			renderer.quad.Draw(renderer.shaders[2], renderer.blurredTextures[0]);
 
 
 
 
-		//ImGui::SetNextWindowPos(ImVec2(0, 0));
-		//ImGui::Begin("Options Window");
-		//ImGui::Text("You can change parameters in real time using this panel");
-		//ImGui::Text("Press left alt to interract");
+
+
+
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::Begin("Options Window");
+		ImGui::Text("You can change parameters in real time using this panel");
+		ImGui::Text("Press left alt to interract");
 
 
 
 
-		//ImGui::BeginTabBar("#tabs");
-		//if (ImGui::BeginTabItem("Light Casters"))
-		//{
-		//	ImGui::ListBox("", &LightParams::selectedLight, items, IM_ARRAYSIZE(items));
-		//	switch (LightParams::selectedLight)
-		//	{
-		//	case 0:
-		//		ImGui::ColorEdit3("Color", (float*)&LightParams::dirLightCol);
-		//		ImGui::InputFloat3("Light Direction", (float*)&LightParams::dirLightDir);
-		//		break;
-		//	case 1:
-		//		ImGui::ColorEdit3("Color", (float*)& LightParams::pointLightCol);
-		//		ImGui::SliderFloat("Intensity", &LightParams::pLightIntensity, 0.1f, 15.f);
-		//		break;
-		//	case 3:
-		//		ImGui::SliderAngle("Angle", &LightParams::innerAngleRadians);
-		//		break;
-		//	}
-		//	ImGui::EndTabItem();
-		//}
-		//if (ImGui::BeginTabItem("Light Maps"))
-		//{
-		//	ImGui::Checkbox("Use normal map", &LightParams::useNormalMap);
-		//	ImGui::Checkbox("Use displaycement map", &LightParams::useDispMap);
-		//	ImGui::EndTabItem();
-		//}
-		//if (ImGui::BeginTabItem("Post Processing"))
-		//{
-		//	ImGui::Checkbox("Enable Blur", &LightParams::toggleBlur);
-		//	ImGui::Checkbox("Enable Bloom", &LightParams::toggleBloom);
-		//	ImGui::Checkbox("Enable Depth of Field", &LightParams::toggleDepthOfField);
+		ImGui::BeginTabBar("#tabs");
+		if (ImGui::BeginTabItem("Light Casters"))
+		{
+			ImGui::ListBox("", &LightParams::selectedLight, items, IM_ARRAYSIZE(items));
+			switch (LightParams::selectedLight)
+			{
+			case 0:
+				ImGui::ColorEdit3("Color", (float*)&LightParams::dirLightCol);
+				ImGui::InputFloat3("Light Direction", (float*)&LightParams::dirLightDir);
+				break;
+			case 1:
+				ImGui::ColorEdit3("Color", (float*)& LightParams::pointLightCol);
+				ImGui::SliderFloat("Intensity", &LightParams::pLightIntensity, 0.1f, 15.f);
+				break;
+			case 3:
+				ImGui::SliderAngle("Angle", &LightParams::innerAngleRadians);
+				break;
+			}
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Light Maps"))
+		{
+			ImGui::Checkbox("Use normal map", &LightParams::useNormalMap);
+			ImGui::Checkbox("Use displaycement map", &LightParams::useDispMap);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Post Processing"))
+		{
+			ImGui::Checkbox("Enable Blur", &LightParams::toggleBlur);
+			ImGui::Checkbox("Enable Bloom", &LightParams::toggleBloom);
+			ImGui::Checkbox("Enable Shadow Mapping", &LightParams::toggleShadowMapping);
 
-		//	ImGui::EndTabItem();
-		//}
-		//ImGui::EndTabBar();
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
 
 
-		//
+		
 
-		//ImGui::End();
+		ImGui::End();
 
-		//ImGui::Render();
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	
 		glfwSwapBuffers(window);

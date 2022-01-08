@@ -159,6 +159,7 @@
     <ClInclude Include="include\Quad.h" />
     <ClInclude Include="include\renderer.h" />
     <ClInclude Include="include\Shader.h" />
+    <ClInclude Include="include\skybox.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\LightParams.h" />
   </ItemGroup>
@@ -179,6 +180,7 @@
     <ClCompile Include="src\Quad.cpp" />
     <ClCompile Include="src\renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\skybox.cpp" />
     <ClCompile Include="src\Source.cpp" />
     <ClCompile Include="src\stdb_image.cpp" />
   </ItemGroup>
