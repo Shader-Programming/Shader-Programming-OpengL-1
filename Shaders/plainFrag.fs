@@ -121,7 +121,7 @@ vec3 SpotLight(vec3 norm, vec3 viewDir)
     specluarColor = specluarColor * illum;
 
 
-    vec3 result =  diffuseColor + specluarColor;
+    vec3 result = diffuseColor + specluarColor;
     return result;
 }
 
@@ -176,7 +176,7 @@ return result;
 vec3 RimLight(vec3 norm, vec3 viewDir)
 {
 
-float rim = 1.0 - dot(viewDir,norm);
+float rim = 1.0 - max(dot(viewDir,norm),0.0);
 rim = clamp(rim - 0.5,0.0,1.0);
 
 vec3 color = vec3(1.0,0.0,0.0) * rim;

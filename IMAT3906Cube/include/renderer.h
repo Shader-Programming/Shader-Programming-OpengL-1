@@ -9,6 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <stb_image.h>
+#include <unordered_map>
 
 #include "Shader.h"
 #include "Camera.h"
@@ -23,8 +24,11 @@ public:
 	Renderer(const unsigned int sWidth, const unsigned int sHeight);
 	void RenderScene( Camera camera);
 	void RenderShadowMap();
-	std::vector<Shader> shaders;
-	void assignCamera(Camera& cam);
+	void RenderBlurAndBloom();
+	void RenderQuadWithPostProcessing();
+
+	std::unordered_map<std::string, Shader> shaders;
+	void assignCameraAndSetUniforms(Camera& cam);
 	unsigned int FBO,FBODepth,FBOBlur, FBODepthMap;
 	void PrepareFrameBuffers();
 	void setFBODepth();
@@ -37,23 +41,17 @@ public:
 private:
 	void loadShaders();
 	void loadTextures();
-	SkyBox skybox;
-
 	unsigned int loadTexture(char const* path);
-
-
+	unsigned int screenWidth, screenHeight;
+	std::vector<Shader> m_shaders;
+	SkyBox skybox;
 	Cube cube1;
 	Plane plane1;
 	Camera* camera;
 	glm::vec3 cubeColor = glm::vec3(1.0, 0.4, 0.4);
 	glm::vec3 floorColor = glm::vec3(0.1, 0.3, 0.3);
-	
 	glm::mat4 lightProjection;
 	glm::mat4 lightView;
-
-	unsigned int screenWidth, screenHeight;
-	
-
 };
 
 
